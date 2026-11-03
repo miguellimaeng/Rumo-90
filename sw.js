@@ -1,5 +1,5 @@
-/* Rumo aos 90 kg — funcionamento offline (versão 7) */
-const V="rumo90-v7", EXT="rumo90-ext";
+/* Rumo aos 90 kg — funcionamento offline (versão 8) */
+const V="rumo90-v8", EXT="rumo90-ext";
 const SHELL=["./","./index.html","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png","./icons/apple-touch-icon.png"];
 const OPT=["./pdf.min.mjs","./pdf.worker.min.mjs"];
 self.addEventListener("install",e=>{ e.waitUntil(caches.open(V).then(async c=>{ await Promise.all(SHELL.map(u=>c.add(new Request(u,{cache:"reload"})).catch(()=>{}))); await Promise.all(OPT.map(u=>c.add(u).catch(()=>{}))); }).then(()=>self.skipWaiting())); });
