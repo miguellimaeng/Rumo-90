@@ -300,6 +300,29 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--panel-2)}
 .st3 button[data-s="n"][aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:var(--panel)}
 details summary{cursor:pointer;font-size:.86rem;font-weight:600;color:var(--accent);padding:4px 0}
 .tips{margin:0;padding-left:20px;display:grid;gap:7px;font-size:.92rem}
+.xtips{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);display:grid;gap:6px}
+.xlist{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+.xlist li{padding:10px 12px;border-radius:10px;background:var(--accent-soft);font-size:.9rem;display:grid;gap:4px}
+.xlist li>.chip{justify-self:start}
+.xlist a{font-size:.8rem;font-weight:600;color:var(--accent);word-break:break-word}
+.lmlist{display:grid;gap:8px}
+.lm{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--panel-2);cursor:pointer}
+.lm input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
+.lm input[type=time]{width:auto;padding:6px 8px}
+.lm>span{display:grid;gap:2px;min-width:0}
+.lm.dis{opacity:.55;cursor:default}
+#lmG{gap:8px}
+.cqgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,96px),1fr));gap:8px}
+.cq{border-radius:12px;padding:10px 8px;text-align:center;background:var(--panel-2);color:var(--muted);display:grid;gap:2px;opacity:.6}
+.cq b{font-family:var(--display);font-weight:700;font-size:1.15rem;line-height:1.1}
+.cq span{font-size:.7rem}
+.cq.on{opacity:1;background:var(--target-soft);color:var(--ink)}
+.cq.on b{color:var(--target)}
+.rs-t{display:block;font-size:1.05rem;margin-bottom:8px}
+.rs-s{border-left:3px solid var(--line);padding:2px 0 2px 10px;margin:8px 0}
+.rs-s ul{margin:4px 0 0;padding-left:18px;display:grid;gap:3px;font-size:.9rem}
+.rs-s.ok{border-color:var(--ok)} .rs-s.warn{border-color:var(--warn)} .rs-s.acc{border-color:var(--accent)}
+.rs-f{background:var(--accent-soft);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:.92rem}
 /* rodapé */
 .brandfoot{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;padding-top:18px;border-top:1px solid var(--line)}
 .brandfoot img{width:56px;height:56px;border-radius:50%}
@@ -391,6 +414,11 @@ details summary{cursor:pointer;font-size:.86rem;font-weight:600;color:var(--acce
         <div id="ruler" aria-hidden="true"></div>
       </section>
       <section class="kpis" id="kpis" aria-label="Indicadores"></section>
+      <div class="grid2">
+        <div class="panel"><div class="sec-h"><h2>Resumo da semana</h2><button type="button" class="btn small" id="rsBtn">Como foi minha semana</button></div><div id="rsBody"></div><span class="sub" id="rsMsg"></span>
+          <div class="row" style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px"><button class="btn ghost small" data-go="relatorio">Relatório em PDF para a consulta</button></div></div>
+        <div class="panel"><div class="sec-h"><h2>Conquistas</h2><span class="sub" id="conqN"></span></div><div class="sub" id="conqStreak" style="margin-bottom:10px"></div><div class="cqgrid" id="conqGrid"></div></div>
+      </div>
       <div class="grid2">
         <div class="panel"><div class="sec-h"><h2>Sinais e lembretes</h2><span class="sub">Atualizam a cada registro</span></div><div class="alerts" id="alerts"></div></div>
         <div class="panel"><div class="chart-h"><h3>Peso semanal × trajetória</h3><div class="legend"><span><i style="background:var(--accent)"></i>Peso médio</span><span><i style="background:var(--target)"></i>118 → 113 kg</span></div></div><div class="chart" id="cPeso"></div></div>
@@ -533,6 +561,7 @@ details summary{cursor:pointer;font-size:.86rem;font-weight:600;color:var(--acce
         <div class="panel"><div class="sec-h"><h2>Medicamentos em uso</h2><span class="sub">Organização, sem mudar prescrição</span></div><div id="medList"></div>
           <p class="foot" style="margin-top:12px"><b>Atendimento imediato</b> em caso de desmaio, dor no peito, falta de ar intensa, dor abdominal forte e persistente, desidratação grave ou alteração visual nova.</p></div>
         <div class="panel"><div class="sec-h"><h2>Sinalizadores pessoais</h2></div><p class="sub" style="margin:0 0 12px">Limites usados nos alertas. Não são limites clínicos; ajuste com seu médico.</p><div class="form" id="paramForm"></div></div>
+        <div class="panel"><div class="sec-h"><h2>Aparência</h2></div><p class="sub" style="margin:0 0 12px">Automático segue o modo claro ou escuro do celular.</p><div class="seg" id="temaSeg"></div></div>
         <div class="panel"><div class="sec-h"><h2>Seus dados</h2></div><p class="sub" style="margin:0 0 12px">Os registros ficam salvos neste celular. Faça um backup de vez em quando para não perder nada se trocar de aparelho.</p><div class="row"><button class="btn ghost" id="btnCsv" type="button">Baixar registros (CSV)</button><span class="sub" id="csvMsg"></span></div></div>
       </div>
     </div>
@@ -548,6 +577,36 @@ details summary{cursor:pointer;font-size:.86rem;font-weight:600;color:var(--acce
         <div id="phCompare" style="margin-top:16px"></div>
         <div class="photos" id="phGrid" style="margin-top:16px"></div>
         <p class="foot" style="margin-top:12px">As fotos ficam guardadas só neste celular.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RELATÓRIO -->
+  <section class="view" data-v="relatorio" hidden>
+    <div style="display:grid;gap:16px">
+      <button class="back" data-go="mais">‹ Mais</button>
+      <div class="panel">
+        <div class="sec-h"><h2>Relatório para a consulta</h2><span class="sub">PDF para o médico, a nutricionista ou o personal</span></div>
+        <p class="sub" style="margin:0 0 12px">Escolha o que entra. O PDF traz um resumo com os números principais, gráficos e tabelas do plano todo.</p>
+        <div class="lmlist" id="rpOpts"></div>
+        <div class="row" style="margin-top:14px"><button class="btn" type="button" id="rpGo">Gerar PDF</button><span class="sub" id="rpMsg"></span></div>
+        <p class="foot" style="margin-top:12px">No celular, o PDF abre direto no Compartilhar (WhatsApp, e-mail, Drive). Ele leva dados de saúde: envie só para quem você quiser.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEMBRETES -->
+  <section class="view" data-v="lembretes" hidden>
+    <div style="display:grid;gap:16px">
+      <button class="back" data-go="mais">‹ Mais</button>
+      <div class="panel">
+        <div class="sec-h"><h2>Lembretes no calendário</h2><span class="sub" id="lmN"></span></div>
+        <p class="sub" style="margin:0 0 12px">O app cria eventos repetidos no calendário do celular, que avisam na hora certa. Se mudar a ficha, a dieta ou os horários, gere de novo e apague os antigos no calendário.</p>
+        <div class="lmlist" id="lmForm"></div>
+        <div style="display:grid;gap:10px;margin-top:16px">
+          <div><b>iPhone, Outlook ou Samsung</b><div class="row" style="margin-top:6px"><button class="btn" type="button" id="lmIcs">Adicionar ao calendário</button><span class="sub" id="lmMsg"></span></div></div>
+          <div><b>Google Agenda</b><div class="sub">Toque em cada lembrete e depois em Salvar.</div><div class="row" id="lmG" style="margin-top:6px"></div></div>
+        </div>
       </div>
     </div>
   </section>
@@ -600,10 +659,23 @@ function parseJ(t){ try{ return JSON.parse(t); }catch(e){} const f=t.match(/```(
 async function call(prompt,o){ const c=cfg(); if(!c.key) throw {code:"no_key"};
   const content=[]; for(const im of (o&&o.images)||[]) content.push({type:"image",source:{type:"base64",media_type:im.type||"image/jpeg",data:await b64(im)}});
   content.push({type:"text",text:prompt});
-  let r; try{ r=await _fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal:o&&o.signal,headers:{"content-type":"application/json","x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:c.model||"claude-sonnet-5-5",max_tokens:8000,messages:[{role:"user",content}]})}); }
-  catch(e){ if(e&&e.name==="AbortError") throw {code:"cancelled"}; throw {code:"offline"}; }
-  if(r.status===401||r.status===403) throw {code:"bad_key"}; if(r.status===429) throw {code:"rate_limited"}; if(r.status===413) throw {code:"prompt_too_large"}; if(!r.ok) throw {code:"upstream_error"};
-  const j=await r.json(); return (j.content||[]).filter(x=>x.type==="text").map(x=>x.text).join(""); }
+  const web=!!(o&&o.web); window.__lastSearchUrls=[]; window.__lastWeb=false;
+  let msgs=[{role:"user",content}], useWeb=web, out=[];
+  for(let round=0;round<4;round++){
+    const body={model:c.model||"claude-sonnet-5-5",max_tokens:8000,messages:msgs};
+    if(useWeb) body.tools=[{type:"web_search_20250305",name:"web_search",max_uses:6}];
+    let r; try{ r=await _fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal:o&&o.signal,headers:{"content-type":"application/json","x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify(body)}); }
+    catch(e){ if(e&&e.name==="AbortError") throw {code:"cancelled"}; throw {code:"offline"}; }
+    if(r.status===401||r.status===403) throw {code:"bad_key"}; if(r.status===429) throw {code:"rate_limited"}; if(r.status===413) throw {code:"prompt_too_large"};
+    if(r.status===400&&useWeb&&round===0){ useWeb=false; round=-1; continue; }
+    if(!r.ok) throw {code:"upstream_error"};
+    const j=await r.json(); const blocks=j.content||[];
+    blocks.forEach(b=>{ if(b.type==="web_search_tool_result"&&Array.isArray(b.content)) b.content.forEach(x=>{ if(x&&x.url) window.__lastSearchUrls.push(x.url); }); if(b.type==="server_tool_use") window.__lastWeb=true; });
+    out=blocks;
+    if(j.stop_reason==="pause_turn"){ msgs=[{role:"user",content},{role:"assistant",content:blocks}]; continue; }
+    break; }
+  const texts=out.filter(x=>x.type==="text").map(x=>x.text);
+  return web?texts.join(""):texts.join(""); }
 const sample=async(p,o)=>({text:await call(p,o),truncated:false});
 sample.json=async(p,o)=>parseJ(await call(p+"\n\nResponda apenas com o JSON, sem nenhum texto antes ou depois.",o));
 sample.limits=async()=>({maxPromptBytes:262144,images:{maxCount:6,maxInputBytes:20000000,mediaTypes:["image/jpeg","image/png","image/webp","image/gif"]}});
@@ -628,8 +700,8 @@ const MEDS=[["08h","Furosemida 40 mg","Perda de líquidos; conferir Na, K, Mg e 
 let MEALS=[];
 const FOODS=[["2 ovos",12],["Frango 150 g",45],["Peixe 150 g",35],["Patinho 150 g",45],["Iogurte proteico",15],["Iogurte natural",7],["Whey (1 dose)",24],["Feijão (1 concha)",6],["Pão integral (2 fatias)",6],["Queijo branco 30 g",5],["Tofu 100 g",10],["Lentilha (1 concha)",8]];
 let CARD=null;
-const ICON={semana:'<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',pressao:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M8 12h2l1.2-2 1.6 4 1.2-2H16"/>',cargas:'<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>',exames:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/>',consulta:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M8.5 11l2 2 4-4M8.5 17h7"/>',fotos:'<rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8.5 6l1.5-2.5h4L15.5 6"/>'};
-const TILES=[["semana","Registro semanal","Cintura, pressão, sono, calorias"],["pressao","Pressão 14 dias","Manhã e noite, com alerta"],["cargas","Cargas","Histórico por exercício"],["exames","Exames","Junho × novembro"],["consulta","Consulta","Checklist, remédios, dados"],["fotos","Fotos de progresso","Compare mês a mês"]];
+const ICON={relatorio:'<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',lembretes:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/>',semana:'<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',pressao:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M8 12h2l1.2-2 1.6 4 1.2-2H16"/>',cargas:'<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>',exames:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/>',consulta:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M8.5 11l2 2 4-4M8.5 17h7"/>',fotos:'<rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8.5 6l1.5-2.5h4L15.5 6"/>'};
+const TILES=[["relatorio","Relatório para consulta","PDF para médico, nutri e personal"],["lembretes","Lembretes","Pesagem, treinos e refeições no calendário"],["semana","Registro semanal","Cintura, pressão, sono, calorias"],["pressao","Pressão 14 dias","Manhã e noite, com alerta"],["cargas","Cargas","Histórico por exercício"],["exames","Exames","Junho × novembro"],["consulta","Consulta e ajustes","Checklist, remédios, backup, aparência"],["fotos","Fotos de progresso","Compare mês a mês"]];
 
 /* ============ planos (e-book ou arquivo do profissional) ============ */
 const DOWS=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
@@ -827,6 +899,8 @@ function buildAlerts(D){
   L.push(["info","Exames",dd>0?`Reavaliação prevista em ${dd} dia(s), no final de novembro.`:"Data dos exames chegou. Registre os resultados em Mais › Exames."]);
   const res=CHECK.filter((_,i)=>(S.check[i]||{}).st==="Resolvido").length;
   L.push([res===CHECK.length?"ok":"info","Consulta",`${res} de ${CHECK.length} itens do checklist resolvidos.`]);
+  if(window.__PWA&&ready){ let lb=null; try{ lb=localStorage.getItem("rumo90-lastbk"); }catch(e){} const days=lb?Math.floor((Date.now()-Date.parse(lb))/864e5):null;
+    if(Object.keys(S.diario).length>=3&&(days==null||days>7)) L.push(["warn","Backup",days==null?"Você ainda não fez nenhum backup. Faça em Mais › Consulta e ajustes.":`Último backup há ${days} dias. Faça um novo em Mais › Consulta e ajustes.`]); }
   return L;
 }
 const alHTML=L=>L.map(a=>`<div class="al" data-k="${a[0]}"><span class="pill">${a[1]}</span><div>${a[2]}</div></div>`).join("");
@@ -925,6 +999,7 @@ function renderPainel(D){
     ["IMC",fmt(D.imc),"Altura 1,80 m",D.pesos.map(p=>p==null?null:p/(P0.alt*P0.alt)),""]];
   $("kpis").innerHTML=K.map(k=>`<div class="kpi"><div class="top2"><span class="label">${k[0]}</span>${k[4]}</div><div class="v">${k[1]}</div><div class="h">${k[2]}</div>${spark(k[3])}</div>`).join("");
   $("alerts").innerHTML=alHTML(buildAlerts(D));
+  renderResumo(); renderConq(D);
   if(document.querySelector('[data-v="painel"]').hidden) return;
   const t=[]; for(let w=1;w<=12;w++) t.push(traj(w));
   lineChart($("cPeso"),{series:[{name:"Trajetória",v:t,color:"var(--target)",dash:true,dots:false,w:2},{name:"Peso",v:D.pesos,color:"var(--accent)",area:true,unit:" kg",endLabel:true}],extra:[P0.ini],minPad:1});
@@ -963,7 +1038,8 @@ function impCard(sec){ const x=IMPTXT[sec], el=$(sec==="treino"?"trEmpty":"cmEmp
 function bindImp(sec){ const i=$("imp_"+sec); if(!i) return; i.addEventListener("change",e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(f) importFlow(sec,f,{msg:$("impm_"+sec),stop:$("imps_"+sec)}); }); }
 function renderTips(sec){ const p=sec==="treino"?S.treinoPlan:S.dieta, el=$(sec==="treino"?"trDicas":"cmDicas");
   const L=[]; if(p){ (Array.isArray(p.dicas)?p.dicas:[]).forEach(d=>L.push(d)); if(p.agua) L.push("Água: "+p.agua); if(p.observacoes&&!L.includes(p.observacoes)) L.push(p.observacoes); }
-  el.innerHTML=L.length?`<ul class="tips">${L.map(d=>`<li>${esc(d)}</li>`).join("")}</ul>`:`<span class="sub">${p?"O arquivo não trouxe dicas.":"As dicas do arquivo importado aparecem aqui."}</span>`;
+  el.innerHTML=(L.length?`<ul class="tips">${L.map(d=>`<li>${esc(d)}</li>`).join("")}</ul>`:`<span class="sub">${p?"O arquivo não trouxe dicas.":"As dicas do arquivo importado aparecem aqui."}</span>`)+xtHTML(sec);
+  const xb=$("xtb_"+sec); if(xb) xb.onclick=()=>buscarDicas(sec); const xs=$("xts_"+sec); if(xs) xs.onclick=()=>{ if(xtBusy) xtBusy.abort(); };
   const ta=$("nt_"+sec); if(document.activeElement!==ta) ta.value=(S.notas||{})[sec]||""; }
 ["treino","comida"].forEach(sec=>{ let nt=null; $("nt_"+sec).addEventListener("input",e=>{ S.notas=S.notas||{}; S.notas[sec]=e.target.value; clearTimeout(nt); nt=setTimeout(()=>{ save(); $("nt_"+sec+"_s").textContent="Salvo"; setTimeout(()=>$("nt_"+sec+"_s").textContent="",1500); },600); }); });
 function renderTreino(){
@@ -981,7 +1057,7 @@ function renderTreino(){
   $("trList").innerHTML=list.map(e=>{ const n=setsOf(e[2]); tot+=n; const stt=sess.sets[e[1]]||[]; done+=stt.filter(Boolean).length;
     const ll=lastLoad(e[1]), cur=(S.cargas[e[1]]||{})[curWeek], unit=/\(s\)|segundo/i.test(e[1]+e[2])?"s":"kg", ph=e[6]!=null?e[6]:ll?ll[1]:null;
     const meta=[esc(e[2]), e[5]?`carga ${esc(e[5])}`:"", e[7]?`descanso ${fmt(e[7],0)} s`:""].filter(Boolean).join(" · ");
-    return `<div class="trx"><div><b>${esc(e[1])}</b><div class="meta">${meta}</div>${e[4]?`<div class="meta">${esc(e[4])}</div>`:""}${ll?`<div class="meta">Última vez: ${fmt(ll[1])} ${unit} (semana ${ll[0]})</div>`:""}</div>
+    return `<div class="trx"><div><b>${esc(e[1])}</b>${isPR(e[1])?' <span class="chip good">recorde</span>':""}<div class="meta">${meta}</div>${e[4]?`<div class="meta">${esc(e[4])}</div>`:""}${ll?`<div class="meta">Última vez: ${fmt(ll[1])} ${unit} (semana ${ll[0]})</div>`:""}</div>
       <input inputmode="decimal" data-ex="${esc(e[1])}" value="${cur!=null?String(cur).replace(".",","):""}" placeholder="${ph!=null?fmt(ph,ph%1?1:0):unit}" aria-label="Carga usada em ${esc(e[1])} (${unit})">
       <div class="sets">${Array.from({length:n},(_,i)=>`<button type="button" class="set" data-ex="${esc(e[1])}" data-r="${e[7]||90}" data-i="${i}" aria-pressed="${!!stt[i]}" aria-label="Série ${i+1}">${i+1}</button>`).join("")}</div></div>`; }).join("");
   $("trProg").style.width=(tot?done/tot*100:0)+"%"; $("trCount").textContent=`${done} de ${tot} séries`;
@@ -990,7 +1066,7 @@ function renderTreino(){
   $("trList").querySelectorAll(".set").forEach(b=>b.onclick=()=>{ const ex=b.dataset.ex,i=+b.dataset.i;
     const s=S.sessoes[k]&&S.sessoes[k].t===trT?S.sessoes[k]:(S.sessoes[k]={t:trT,sets:{}}); const arr=(s.sets[ex]=s.sets[ex]||[]); arr[i]=arr[i]?0:1;
     save(); renderTreino(); if(arr[i]) startRest(+b.dataset.r||90); });
-  $("trList").querySelectorAll("input").forEach(i=>i.addEventListener("change",()=>{ const ex=i.dataset.ex; S.cargas[ex]=S.cargas[ex]||{}; const v=num(i.value); if(v==null) delete S.cargas[ex][curWeek]; else S.cargas[ex][curWeek]=v; save(); }));
+  $("trList").querySelectorAll("input").forEach(i=>i.addEventListener("change",()=>{ const ex=i.dataset.ex; S.cargas[ex]=S.cargas[ex]||{}; const v=num(i.value); if(v==null) delete S.cargas[ex][curWeek]; else { prCheck(ex,v,curWeek); S.cargas[ex][curWeek]=v; } save(); }));
 }
 $("trDone").onclick=()=>{ const s=S.sessoes[TK]&&S.sessoes[TK].t===trT?S.sessoes[TK]:(S.sessoes[TK]={t:trT,sets:{}}); s.done=true;
   EXS.filter(e=>e[0]===trT).forEach(e=>{ const h=(S.cargas[e[1]]=S.cargas[e[1]]||{}); if(num(h[curWeek])!=null) return; const sets=(s.sets[e[1]]||[]).filter(Boolean).length; if(!sets) return; const ll=lastLoad(e[1]); const v=e[6]!=null?e[6]:ll?ll[1]:null; if(v!=null) h[curWeek]=v; });
@@ -1024,10 +1100,12 @@ function renderComida(){
       <details class="det" data-det="${m.k}" ${openDet[m.k]||mine.length?"open":""}><summary>Detalhar o que comi${g?` · ${fmt(g,0)} g de proteína`:""}</summary>
         <div class="foods" style="margin-top:8px">${FOODS.map((f,i)=>`<button type="button" class="food" data-f="${i}" data-m="${m.k}"><b>${f[0]}</b><span>≈ ${f[1]} g</span></button>`).join("")}</div>
         <div class="row" style="margin-top:8px"><input inputmode="numeric" placeholder="Outro (g de proteína)" data-cust="${m.k}" style="flex:1;min-width:140px" aria-label="Gramas de proteína"><button class="btn small" type="button" data-add="${m.k}">Adicionar</button></div>
+        ${SAMPLE&&SLIM&&SLIM.images?`<div class="row" style="margin-top:8px"><label class="btn ghost small" for="fp_${m.k}">Foto do prato</label><input type="file" id="fp_${m.k}" data-fp="${m.k}" accept="image/*" hidden><span class="sub" id="fpm_${m.k}" style="flex:1;min-width:0"></span></div>`:""}
         <div class="items">${mine.map(([x,i])=>`<div class="item"><span>${esc(x.n)}</span><span class="row" style="gap:8px"><b>${fmt(+x.g,0)} g</b><button type="button" class="x" data-i="${i}" aria-label="Remover ${esc(x.n)}">×</button></span></div>`).join("")}</div>
       </details></div>`; }).join("");
   $("cmMeals").querySelectorAll("details.det").forEach(d=>d.addEventListener("toggle",()=>{ openDet[d.dataset.det]=d.open; }));
   $("cmMeals").querySelectorAll(".food").forEach(b=>b.onclick=()=>addItem(b.dataset.m,FOODS[+b.dataset.f][0],FOODS[+b.dataset.f][1]));
+  $("cmMeals").querySelectorAll("[data-fp]").forEach(i=>i.addEventListener("change",e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(f) fotoPrato(i.dataset.fp,f); }));
   $("cmMeals").querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{ const inp=$("cmMeals").querySelector(`[data-cust="${b.dataset.add}"]`), g=num(inp.value); if(g==null||g<=0||g>150){ toast("Informe os gramas de proteína (1 a 150)."); return; } addItem(b.dataset.add,"Outro",Math.round(g)); });
   $("cmMeals").querySelectorAll(".x").forEach(b=>b.onclick=()=>{ const d=S.diario[TK]; d.itens.splice(+b.dataset.i,1); if(!d.itens.length) delete d.itens; if(!Object.keys(d).length) delete S.diario[TK]; save(); renderComida(); });
   $("cmWeekP").hidden=!CARD;
@@ -1099,7 +1177,7 @@ function renderCargas(){
     const vals=Array.from({length:12},(_,i)=>num(h[i+1]));
     return `<div class="ex"><div><b>${esc(e[1])}</b><div class="s">${esc(e[2])}${e[5]?" · indicada "+esc(e[5]):""}${prev?` · semana ${prev[0]}: ${fmt(prev[1])}`:""}</div></div>
       <input inputmode="decimal" data-ex="${esc(e[1])}" value="${v}" placeholder="${e[1].includes('(s)')?'seg':'kg'}" aria-label="Carga ${esc(e[1])} semana ${cgW}"><div class="spark">${spark(vals)}</div></div>`; }).join("");
-  $("exList").querySelectorAll("input").forEach(i=>i.addEventListener("change",()=>{ const n=i.dataset.ex; S.cargas[n]=S.cargas[n]||{}; const v=num(i.value); if(v==null) delete S.cargas[n][cgW]; else S.cargas[n][cgW]=v; save(); renderCargas(); }));
+  $("exList").querySelectorAll("input").forEach(i=>i.addEventListener("change",()=>{ const n=i.dataset.ex; S.cargas[n]=S.cargas[n]||{}; const v=num(i.value); if(v==null) delete S.cargas[n][cgW]; else { prCheck(n,v,cgW); S.cargas[n][cgW]=v; } save(); renderCargas(); }));
 }
 
 /* ============ EXAMES ============ */
@@ -1119,7 +1197,7 @@ $("exData").addEventListener("change",e=>{ S.exames._data=e.target.value; save()
 
 /* ============ CONSULTA ============ */
 const ST=["Pendente","Conversado","Resolvido"];
-function renderConsulta(){
+function renderConsulta(){ renderTema();
   $("ckList").innerHTML=CHECK.map((t,i)=>{ const c=S.check[i]||{}, st=c.st||"Pendente";
     return `<div class="check"><button type="button" class="st" data-i="${i}" data-v="${st}" aria-label="Status: ${st}. Tocar para mudar">${st}</button><div style="display:grid;gap:6px;min-width:0"><div>${t}</div><input data-n="${i}" placeholder="Resposta do médico" value="${esc(c.nota||"")}"></div></div>`; }).join("");
   $("ckCount").textContent=`${CHECK.filter((_,i)=>(S.check[i]||{}).st==="Resolvido").length} de ${CHECK.length} resolvidos`;
@@ -1283,6 +1361,60 @@ async function runAI(sec,file,fname,ui){
   finally{ if(stop) stop.hidden=true; }
 }
 
+/* ---- dicas complementares (pesquisa) ---- */
+let xtBusy=null;
+function healthCtx(){ const D=derive(), pr=latestPA(), L=[];
+  L.push(`Homem adulto, 1,80 m. Peso atual ~${fmt(D.last)} kg (era 128 kg em junho/2026); objetivo 90 kg; ritmo atual ${D.ritmo==null?"sem dados":fmt(D.ritmo,2)+" kg/semana"}.`);
+  L.push("Remédios em uso: "+MEDS.map(m=>m[1]).join("; ")+".");
+  const ex=EXAMES.map(e=>{ const nv=num(S.exames[e[0]]); const v=nv!=null?nv:e[2]; return v!=null?`${e[0]} ${String(v).replace(".",",")} ${e[1]}${nv!=null?" (recente)":" (junho)"}`:null; }).filter(Boolean);
+  (S.exames._extras||[]).forEach(x=>ex.push(`${x.n} ${x.v} ${x.u||""}`));
+  if(ex.length) L.push("Exames: "+ex.join("; ")+".");
+  if(pr) L.push(`Última pressão: ${pr.s}/${pr.d} mmHg.`);
+  return L.join("\n"); }
+function planCtx(sec){ if(sec==="treino"){ const tp=S.treinoPlan; return tp.treinos.map(t=>`Treino ${t.codigo||""} (${t.nome||""}): `+t.exercicios.map(e=>`${e.nome} ${e.series||""}x${e.reps||""}${e.carga?" "+e.carga:""}`).join("; ")).join("\n")+(tp.dicas&&tp.dicas.length?"\nDicas do personal: "+tp.dicas.join("; "):""); }
+  const d=S.dieta; return `Dieta${d.kcal_total?` de ${d.kcal_total} kcal`:""}${d.proteina_total_g?`, ${d.proteina_total_g} g de proteína`:""}:\n`+d.refeicoes.map(r=>`${r.horario||""} ${r.nome}: `+((r.itens||[]).length?r.itens.map(x=>`${x.alimento}${x.quantidade?" "+x.quantidade:""}`).join(", "):r.descricao)+((r.substituicoes||[]).length?` (substituições: ${r.substituicoes.join("; ")})`:"")).join("\n")+(d.dicas&&d.dicas.length?"\nDicas da nutricionista: "+d.dicas.join("; "):""); }
+function tipsPrompt(sec){
+  const foco=sec==="treino"?"execução correta e segura dos exercícios desta ficha, aquecimento, respiração, progressão, recuperação, caminhada/cardio complementar e cuidados de treino para quem usa anti-hipertensivo e diurético (tontura, hidratação, levantar devagar)":"como preparar e variar os alimentos desta dieta respeitando as mesmas porções (receitas simples, temperos sem excesso de sal, organização de marmitas), saciedade, fibras, escolhas dentro da dieta que ajudam no LDL e na resistência à insulina, e cuidados com sódio, potássio e hidratação para quem usa furosemida e olmesartana";
+  return `Você complementa, sem substituir, o plano passado por ${sec==="treino"?"um personal trainer":"uma nutricionista"} a um paciente. Pesquise na internet em fontes confiáveis (sociedades médicas e de educação física, OMS, Ministério da Saúde, ACSM, SBC, SBEM, SBD, universidades, hospitais de referência, PubMed) e escreva dicas práticas sobre: ${foco}.
+
+PLANO ATUAL:
+${planCtx(sec)}
+
+DADOS DE SAÚDE DO PACIENTE:
+${healthCtx()}
+
+Regras obrigatórias:
+- Nunca contradiga nem altere o plano: não troque exercícios, séries, cargas, alimentos, quantidades ou horários.
+- Não recomende suplementos, medicamentos, chás "medicinais" nem doses, e não sugira mudar remédios.
+- Se uma dica útil depender de liberação (por exemplo, aumentar o potássio, mudar a ingestão de água, fazer exercício intenso), marque "precisa_liberacao": true e escreva-a como algo a perguntar ao médico ou ao profissional.
+- Cada dica deve vir de uma página que você realmente consultou nesta pesquisa; informe o nome do site e a URL exata.
+- Seja específico para este plano (cite o exercício ou a refeição quando fizer sentido). Português do Brasil, linguagem simples.
+
+Responda somente com JSON:
+{"dicas":[{"titulo":"até 6 palavras","texto":"1 ou 2 frases","refere":"nome do exercício ou da refeição, ou null","fonte":"nome do site","url":"https://...","precisa_liberacao":false}]}
+Entre 5 e 8 dicas.`; }
+async function buscarDicas(sec){
+  const msg=$("xtm_"+sec); if(!SAMPLE){ msg.textContent="A busca de dicas não está disponível nesta visualização."; return; }
+  if(xtBusy) return; xtBusy=new AbortController(); renderTips(sec);
+  try{ $("xtm_"+sec).textContent="Pesquisando dicas na internet… pode levar até um minuto.";
+    const data=await SAMPLE.json(tipsPrompt(sec),{signal:xtBusy.signal,modelTier:"default",cache:false,web:true});
+    const urls=window.__lastSearchUrls||[], web=window.__PWA&&window.__lastWeb;
+    const host=u=>{ try{ return new URL(u).host.replace(/^www\./,""); }catch(e){ return ""; } };
+    const okUrl=u=>/^https:\/\//.test(u||"")&&urls.length&&(urls.includes(u)||urls.some(x=>host(x)===host(u)));
+    const L=(Array.isArray(data&&data.dicas)?data.dicas:[]).filter(d=>d&&d.texto).slice(0,8).map(d=>({t:String(d.titulo||"").slice(0,60),x:String(d.texto).slice(0,320),r:d.refere?String(d.refere).slice(0,60):"",f:String(d.fonte||"").slice(0,60),u:okUrl(d.url)?String(d.url).slice(0,400):"",lib:!!d.precisa_liberacao}));
+    if(!L.length) throw {code:"empty_tips"};
+    S.dicasExtra=S.dicasExtra||{}; S.dicasExtra[sec]={d:TK,web:!!web,base:(sec==="treino"?S.treinoPlan:S.dieta).fonte||"",itens:L}; save(); toast(`${L.length} dicas complementares`);
+  }catch(e){ xtBusy=null; renderTips(sec); $("xtm_"+sec).textContent=e&&e.code==="empty_tips"?"A pesquisa não trouxe dicas úteis. Tente de novo mais tarde.":aiErr(e); return; }
+  xtBusy=null; renderTips(sec); }
+function xtHTML(sec){ const p=sec==="treino"?S.treinoPlan:S.dieta, X=(S.dicasExtra||{})[sec];
+  if(!p) return "";
+  const stale=X&&X.base!==(p.fonte||"");
+  return `<div class="xtips"><div class="row" style="justify-content:space-between;gap:8px"><b>Dicas complementares</b>${xtBusy?`<button type="button" class="btn ghost small" id="xts_${sec}">Cancelar</button>`:`<button type="button" class="btn small ${X&&!stale?"ghost":""}" id="xtb_${sec}">${X?(stale?"Buscar para o plano novo":"Atualizar"):"Buscar dicas"}</button>`}</div>
+    <p class="sub" style="margin:4px 0 0">Pesquisadas na internet com base ${sec==="treino"?"na sua ficha":"na sua dieta"}, nos seus exames e remédios. Complementam, mas não substituem ${sec==="treino"?"o personal":"a nutricionista"}.</p>
+    <span class="sub" id="xtm_${sec}"></span>
+    ${X?`<ul class="xlist">${X.itens.map(d=>`<li><b>${esc(d.t)}</b>${d.r?` <span class="chip">${esc(d.r)}</span>`:""}${d.lib?' <span class="chip warn">pergunte antes ao profissional</span>':""}<div>${esc(d.x)}</div>${d.u?`<a href="${esc(d.u)}" target="_blank" rel="noopener">${esc(d.f||host(d.u))}</a>`:""}</li>`).join("")}</ul><div class="foot">Buscadas em ${dm(parseKey(X.d))}${X.web?"":" · sem pesquisa na internet nesta versão (conhecimento da IA, sem links)"}${stale?" · feitas para o plano anterior":""}</div>`:""}</div>`; }
+function host(u){ try{ return new URL(u).host.replace(/^www\./,""); }catch(e){ return ""; } }
+
 /* ---- conferência ---- */
 let rvApply=null;
 let undoTimer=null, undoSnap=null;
@@ -1339,9 +1471,220 @@ function showReview(sec,data,fname,msgEl){
     trT=null; applyPlans(); save(); toast("Ficha importada"); go("treino"); });
 }
 
+/* ============ RECURSOS EXTRAS ============ */
+let ready=false;
+function shareOrSave(blob,name,title){ return (async()=>{
+  try{ if(window.__PWA&&navigator.canShare){ const f=new File([blob],name,{type:blob.type}); if(navigator.canShare({files:[f]})){ await navigator.share({files:[f],title:title||name}); return "shared"; } } }
+  catch(e){ if(e&&e.name==="AbortError") return "cancel"; }
+  const dl=await window.claude?.use?.("downloads"); if(!dl) throw {code:"no_dl"}; await dl.save({filename:name,data:blob}); return "saved"; })(); }
+
+/* ---- tema ---- */
+const THK="rumo90-tema";
+function getTheme(){ try{ return localStorage.getItem(THK)||"auto"; }catch(e){ return "auto"; } }
+function applyTheme(v){ const r=document.documentElement;
+  if(v==="light"||v==="dark"){ r.setAttribute("data-theme",v); r.dataset.rumoTheme="1"; }
+  else if(r.dataset.rumoTheme){ r.removeAttribute("data-theme"); delete r.dataset.rumoTheme; }
+  const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content=v==="dark"?"#0C131A":"#0D2746"; }
+applyTheme(getTheme());
+function renderTema(){ const el=$("temaSeg"); if(!el) return; const v=getTheme();
+  el.innerHTML=[["auto","Automático"],["light","Claro"],["dark","Escuro"]].map(([k,l])=>`<button type="button" data-tema="${k}" aria-pressed="${v===k}">${l}</button>`).join("");
+  el.querySelectorAll("button").forEach(b=>b.onclick=()=>{ try{ localStorage.setItem(THK,b.dataset.tema); }catch(e){} applyTheme(b.dataset.tema); renderTema(); toast("Aparência: "+b.textContent.toLowerCase()); }); }
+
+/* ---- recordes ---- */
+function maxLoad(ex,exceptW){ const h=S.cargas[ex]||{}; let m=null; Object.keys(h).forEach(w=>{ if(+w===exceptW) return; const v=num(h[w]); if(v!=null&&(m==null||v>m)) m=v; }); return m; }
+function prCheck(ex,v,w){ if(v==null) return; const m=maxLoad(ex,w); if(m!=null&&v>m){ S.prs=S.prs||{}; S.prs[ex]={v,d:TK}; toast(`Novo recorde em ${ex}: ${fmt(v,v%1?1:0)} kg`); } }
+function isPR(ex){ const h=S.cargas[ex]||{}, c=num(h[curWeek]); if(c==null) return false; const m=maxLoad(ex,curWeek); return m!=null&&c>m; }
+
+/* ---- conquistas ---- */
+function streak(){ let i=(S.diario[TK]&&Object.keys(S.diario[TK]).length)?0:1, n=0; for(;i<400;i++){ const d=S.diario[dkey(addDays(today,-i))]; if(d&&Object.keys(d).length) n++; else break; } return n; }
+function conqList(D){ const L=[], perda=P0.jun-D.last, nTr=Object.values(S.diario||{}).filter(d=>d&&d.treino).length, st=streak(), prs=Object.keys(S.prs||{}).length;
+  [5,10,15,20,25,30].forEach(k=>L.push({id:"kg"+k,t:`−${k} kg`,s:"desde junho",ok:perda>=k}));
+  L.push({id:"m12",t:"113 kg",s:"meta das 12 semanas",ok:D.filled.length>0&&D.last<=P0.m12});
+  L.push({id:"kg90",t:"90 kg",s:"objetivo final",ok:D.filled.length>0&&D.last<=P0.meta});
+  [1,10,25,50,100].forEach(n=>L.push({id:"tr"+n,t:`${n} treino${n>1?"s":""}`,s:"concluídos",ok:nTr>=n}));
+  [7,14,30,60].forEach(n=>L.push({id:"st"+n,t:`${n} dias seguidos`,s:"registrando",ok:st>=n}));
+  L.push({id:"diet",t:"Semana na dieta",s:"80% ou mais",ok:Array.from({length:12},(_,i)=>dietWeek(i+1)).some(v=>v!=null&&v>=.8)});
+  L.push({id:"pr1",t:"1º recorde",s:"de carga",ok:prs>=1}); L.push({id:"pr10",t:"10 recordes",s:"de carga",ok:prs>=10});
+  L.push({id:"cint5",t:"−5 cm",s:"de cintura",ok:D.cintVar!=null&&D.cintVar<=-5});
+  return L; }
+function checkConq(D){ if(!ready) return; const L=conqList(D).filter(c=>c.ok);
+  if(!S.conq){ S.conq={}; L.forEach(c=>S.conq[c.id]=TK); save(); return; }
+  const nw=L.filter(c=>!S.conq[c.id]); if(!nw.length) return; nw.forEach(c=>S.conq[c.id]=TK); save();
+  setTimeout(()=>toast(`Conquista: ${nw[0].t} ${nw[0].s}${nw.length>1?` (+${nw.length-1})`:""}`),400); }
+function renderConq(D){ const el=$("conqGrid"); if(!el) return; const L=conqList(D), n=L.filter(c=>c.ok).length;
+  $("conqN").textContent=`${n} de ${L.length}`; $("conqStreak").textContent=`Sequência atual: ${streak()} dia(s) registrando`;
+  el.innerHTML=L.map(c=>`<div class="cq ${c.ok?"on":""}" title="${c.ok&&S.conq&&S.conq[c.id]?"Desde "+dm(parseKey(S.conq[c.id])):"Ainda não"}"><b>${c.t}</b><span>${c.s}</span></div>`).join(""); }
+
+/* ---- resumo da semana ---- */
+let rsBusy=null;
+function weekData(){ const days=[]; for(let i=6;i>=0;i--){ const d=addDays(today,-i), k=dkey(d), x=S.diario[k]||{}, r=x.ref||{};
+    days.push({dia:`${DOW[d.getDay()]} ${dm(d)}`,peso:x.peso??null,treinou:!!x.treino,refeicoes:MEALS.length?MEALS.map(m=>`${m.n}: ${r[m.k]?STL[r[m.k]]:"não marcada"}`):null,proteina_g:protOfDay(k)!=null?Math.round(protOfDay(k)):null}); }
+  const pa=[]; for(let dd=1;dd<=14;dd++){ const p=S.pa[dd]; if(p&&(p.ms||p.ns)) pa.push(`dia ${dd}: manhã ${p.ms||"-"}/${p.md||"-"}, noite ${p.ns||"-"}/${p.nd||"-"}${p.tont?", tontura":""}`); }
+  const loads=EXS.slice(0,30).map(e=>{ const h=S.cargas[e[1]]||{}; return h[curWeek]!=null?`${e[1]}: ${h[curWeek]} kg (semana anterior ${h[curWeek-1]??"-"})`:null; }).filter(Boolean);
+  const D=derive(), sw=S.semanas[curWeek]||{};
+  return {semana_do_plano:curWeek,peso_media_7d:D.useDaily?Math.round(D.last*10)/10:null,meta_trajetoria:Math.round(traj(curWeek)*10)/10,objetivo:90,meta_proteina_g:P0.prot,treinos_previstos_semana:P0.tre,dias:days,pressao:pa.slice(-6),cargas:loads,sono_medio_h:sw.sono??null,sintomas:sw.sint||null,anotacoes:{treino:(S.notas||{}).treino||"",comida:(S.notas||{}).comida||""}}; }
+async function gerarResumo(){ if(!SAMPLE){ $("rsMsg").textContent="O resumo com IA não está disponível nesta visualização."; return; } if(rsBusy) return;
+  rsBusy=new AbortController(); renderResumo(); $("rsMsg").textContent="Analisando sua semana… pode levar até um minuto.";
+  const prompt=`Você é um assistente de acompanhamento de um plano de emagrecimento e treino de força, prescrito por médico, nutricionista e personal. Faça um resumo honesto e encorajador dos últimos 7 dias, só com base nos dados abaixo.
+
+DADOS (JSON):
+${JSON.stringify(weekData())}
+
+Regras: não mude dieta, treino nem remédios; não prescreva nada; se algo preocupar (pressão fora do comum, tontura, perda muito rápida, sintomas), coloque em "levar_ao_profissional". Português do Brasil, frases curtas, cite números quando houver. Se faltarem dados, diga o que registrar.
+
+Responda somente com JSON:
+{"titulo":"frase curta sobre a semana","foi_bem":["até 3 itens"],"atencao":["até 3 itens"],"levar_ao_profissional":["até 3 itens"],"foco":"uma ação prática para a próxima semana"}`;
+  try{ const r=await SAMPLE.json(prompt,{signal:rsBusy.signal,modelTier:"default",cache:false});
+    if(!r||!r.titulo) throw {code:"invalid_json"};
+    const A=v=>(Array.isArray(v)?v:[]).slice(0,3).map(s=>String(s).slice(0,240));
+    S.resumos=S.resumos||[]; S.resumos.unshift({d:TK,w:curWeek,t:String(r.titulo).slice(0,140),b:A(r.foi_bem),a:A(r.atencao),l:A(r.levar_ao_profissional),f:String(r.foco||"").slice(0,240)}); S.resumos=S.resumos.slice(0,12); save(); $("rsMsg").textContent="";
+  }catch(e){ $("rsMsg").textContent=aiErr(e); }
+  rsBusy=null; renderResumo(); }
+function renderResumo(){ const el=$("rsBody"); if(!el) return; const R=(S.resumos||[])[0];
+  $("rsBtn").textContent=rsBusy?"Cancelar":R&&R.d===TK?"Gerar de novo":"Como foi minha semana";
+  $("rsBtn").onclick=()=>{ if(rsBusy){ rsBusy.abort(); return; } gerarResumo(); };
+  if(!R){ el.innerHTML=`<span class="sub">Gere um resumo dos últimos 7 dias: o que foi bem, o que pede atenção e o que levar ao profissional. ${new Date().getDay()===0?"Hoje é domingo, um bom dia para isso.":""}</span>`; return; }
+  const sec=(t,L,c)=>L.length?`<div class="rs-s ${c}"><span class="label">${t}</span><ul>${L.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:"";
+  el.innerHTML=`<b class="rs-t">${esc(R.t)}</b>${sec("Foi bem",R.b,"ok")}${sec("Atenção",R.a,"warn")}${sec("Levar ao profissional",R.l,"acc")}${R.f?`<div class="rs-f"><span class="label">Foco da próxima semana</span><div>${esc(R.f)}</div></div>`:""}<div class="foot">Gerado em ${dm(parseKey(R.d))} · semana ${R.w} do plano</div>`; }
+
+/* ---- foto do prato ---- */
+async function fotoPrato(mk,file){ const m=MEALS.find(x=>x.k===mk), msg=$("fpm_"+mk);
+  if(!SAMPLE||!SLIM||!SLIM.images){ msg.textContent="A leitura de fotos não está disponível aqui."; return; }
+  msg.textContent="Analisando a foto…";
+  try{ const img=await toJpeg(file);
+    const r=await SAMPLE.json(`Foto de uma refeição (${m.n}). Refeição planejada pela nutricionista: ${m.d||"sem detalhes"}${m.prot!=null?` (cerca de ${m.prot} g de proteína)`:""}.
+Identifique os alimentos e estime as quantidades, a proteína e as calorias do prato. Seja conservador; é uma estimativa visual.
+Responda somente com JSON: {"descricao":"resumo curto do prato","itens":[{"alimento":"...","quantidade":"..."}],"proteina_g":30,"kcal":450,"confianca":"baixa|media|alta","comparacao":"1 frase comparando com o planejado, sem julgar"}`,{images:[img],modelTier:"default",cache:false});
+    const g=num(r&&r.proteina_g); if(g==null) throw {code:"invalid_json"};
+    S.diario[TK]=S.diario[TK]||{}; const d=S.diario[TK]; d.itens=d.itens||[];
+    d.itens.push({m:mk,n:"Foto: "+String(r.descricao||"prato").slice(0,70),g:Math.round(g),kcal:num(r.kcal),foto:1}); openDet[mk]=true; save();
+    renderComida(); const mm=$("fpm_"+mk); if(mm) mm.textContent=`Estimativa${({baixa:" (confiança baixa)",media:" (confiança média)",média:" (confiança média)",alta:" (confiança alta)"})[r.confianca]||""}: ~${Math.round(g)} g de proteína${num(r.kcal)?`, ~${Math.round(num(r.kcal))} kcal`:""}. ${r.comparacao||""}`;
+  }catch(e){ msg.textContent=aiErr(e); } }
+
+/* ---- lembretes (calendário) ---- */
+const LMK="rumo90-lembretes";
+function lmCfg(){ let c={}; try{ c=JSON.parse(localStorage.getItem(LMK)||"{}"); }catch(e){} return Object.assign({peso:true,pesoH:"07:00",treino:true,treinoH:"18:30",refeicoes:false,backup:true,resumo:true,exames:true},c); }
+function lmSave(c){ try{ localStorage.setItem(LMK,JSON.stringify(c)); }catch(e){} }
+const BYD=["SU","MO","TU","WE","TH","FR","SA"];
+function nextDate(dow,hh){ const [h,mi]=hh.split(":").map(Number); const now=new Date(); for(let i=0;i<8;i++){ const d=addDays(today,i); d.setHours(h,mi,0,0); if((dow==null||d.getDay()===dow)&&d>now) return d; } return addDays(today,1); }
+function lmEvents(){ const c=lmCfg(), E=[];
+  if(c.peso) E.push({uid:"peso",t:"Pesar em jejum (Rumo 90)",d:"Registre o peso em Hoje.",s:nextDate(null,c.pesoH),min:10,rr:"FREQ=DAILY"});
+  if(c.treino&&TCODES.length) TCODES.forEach(code=>{ const days=Object.keys(TRAIN_OF).filter(k=>TRAIN_OF[k]===code).map(Number); if(!days.length) return; const first=days.map(dw=>nextDate(dw,c.treinoH)).sort((a,b)=>a-b)[0];
+    E.push({uid:"treino-"+code,t:`Treino ${code} · ${TR_NOME[code]}`,d:"Abra o Treino no Rumo 90 para marcar as séries.",s:first,min:60,rr:"FREQ=WEEKLY;BYDAY="+days.map(x=>BYD[x]).join(",")}); });
+  if(c.refeicoes&&MEALS.length) MEALS.filter(m=>m.h).forEach(m=>{ const hh=String(Math.floor(m.hr)).padStart(2,"0")+":"+String(Math.round((m.hr%1)*60)).padStart(2,"0");
+    E.push({uid:"ref-"+m.k,t:m.n+" (Rumo 90)",d:m.d,s:nextDate(null,hh),min:15,rr:"FREQ=DAILY"}); });
+  if(c.resumo) E.push({uid:"resumo",t:"Resumo da semana (Rumo 90)",d:"No Painel, toque em Como foi minha semana.",s:nextDate(0,"19:00"),min:10,rr:"FREQ=WEEKLY;BYDAY=SU"});
+  if(c.backup&&window.__PWA) E.push({uid:"backup",t:"Backup do Rumo 90",d:"Mais › Consulta › Fazer backup.",s:nextDate(0,"20:00"),min:5,rr:"FREQ=WEEKLY;BYDAY=SU"});
+  if(c.exames&&P0.exam>today){ const d=new Date(P0.exam); d.setHours(8,0,0,0); E.push({uid:"exames",t:"Exames de reavaliação (Rumo 90)",d:"Depois, importe o laudo em Mais › Exames.",s:d,min:30}); }
+  return E; }
+const ics2=s=>String(s).replace(/\\/g,"\\\\").replace(/[,;]/g,m=>"\\"+m).replace(/\n/g,"\\n");
+const fmtL=d=>`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}T${String(d.getHours()).padStart(2,"0")}${String(d.getMinutes()).padStart(2,"0")}00`;
+function buildICS(E){ const now=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//TEX Engenharia//Rumo 90//PT","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:Rumo 90",
+    "BEGIN:VTIMEZONE","TZID:America/Sao_Paulo","BEGIN:STANDARD","DTSTART:19700101T000000","TZOFFSETFROM:-0300","TZOFFSETTO:-0300","TZNAME:-03","END:STANDARD","END:VTIMEZONE"];
+  E.forEach(e=>{ L.push("BEGIN:VEVENT",`UID:rumo90-${e.uid}@tex`,`DTSTAMP:${now}`,`DTSTART;TZID=America/Sao_Paulo:${fmtL(e.s)}`,`DURATION:PT${e.min}M`);
+    if(e.rr) L.push("RRULE:"+e.rr); L.push("SUMMARY:"+ics2(e.t),"DESCRIPTION:"+ics2(e.d||""),"BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+ics2(e.t),"TRIGGER:PT0M","END:VALARM","END:VEVENT"); });
+  L.push("END:VCALENDAR"); return L.join("\r\n")+"\r\n"; }
+function gLink(e){ const end=new Date(e.s.getTime()+e.min*60000); const q=new URLSearchParams({action:"TEMPLATE",text:e.t,details:e.d||"",dates:`${fmtL(e.s)}/${fmtL(end)}`,ctz:"America/Sao_Paulo"}); if(e.rr) q.set("recur","RRULE:"+e.rr); return "https://calendar.google.com/calendar/render?"+q.toString(); }
+function renderLembretes(){ const c=lmCfg(), box=$("lmForm");
+  const row=(k,l,sub,time,dis)=>`<label class="lm ${dis?"dis":""}"><input type="checkbox" data-lm="${k}" ${c[k]&&!dis?"checked":""} ${dis?"disabled":""}><span><b>${l}</b><span class="sub">${sub}</span></span>${time?`<input type="time" data-lmh="${time}" value="${c[time]}" ${dis?"disabled":""} aria-label="Horário de ${l}">`:""}</label>`;
+  box.innerHTML=row("peso","Pesagem diária","Todos os dias","pesoH")+
+    row("treino","Treinos",TCODES.length?TCODES.map(t=>`${t}: ${dayLbl(t)}`).join(" · "):"Importe a ficha em Treino","treinoH",!TCODES.length)+
+    row("refeicoes","Refeições",MEALS.length?MEALS.map(m=>m.h).filter(Boolean).join(", "):"Importe a dieta em Comida",null,!MEALS.length)+
+    row("resumo","Resumo da semana","Domingo, 19h",null)+(window.__PWA?row("backup","Backup","Domingo, 20h",null):"")+
+    row("exames","Exames de reavaliação",P0.exam>today?P0.exam.toLocaleDateString("pt-BR"):"Data já passou",null,!(P0.exam>today));
+  box.querySelectorAll("[data-lm]").forEach(i=>i.onchange=()=>{ const n=lmCfg(); n[i.dataset.lm]=i.checked; lmSave(n); renderLembretes(); });
+  box.querySelectorAll("[data-lmh]").forEach(i=>i.onchange=()=>{ const n=lmCfg(); n[i.dataset.lmh]=i.value||n[i.dataset.lmh]; lmSave(n); renderLembretes(); });
+  const E=lmEvents(); $("lmN").textContent=`${E.length} lembrete(s)`;
+  $("lmG").innerHTML=E.length?E.map(e=>`<a class="btn ghost small" href="${esc(gLink(e))}" target="_blank" rel="noopener">${esc(e.t.replace(" (Rumo 90)",""))}</a>`).join(""):`<span class="sub">Marque ao menos um lembrete.</span>`;
+}
+$("lmIcs").onclick=async()=>{ const E=lmEvents(); if(!E.length){ toast("Marque ao menos um lembrete."); return; }
+  try{ const r=await shareOrSave(new Blob([buildICS(E)],{type:"text/calendar"}),"rumo90-lembretes.ics","Lembretes Rumo 90"); $("lmMsg").textContent=r==="cancel"?"":"Abra o arquivo e toque em Adicionar todos."; }catch(e){ $("lmMsg").textContent="Não foi possível gerar o arquivo aqui."; } };
+
+/* ---- relatório PDF ---- */
+const RPK=["peso","pressao","treino","dieta","exames","remedios","notas"];
+const RPL={peso:"Peso, cintura e medidas",pressao:"Pressão arterial",treino:"Treino e cargas",dieta:"Dieta e proteína",exames:"Exames",remedios:"Remédios e checklist",notas:"Minhas anotações e sintomas"};
+function renderRelatorio(){ const box=$("rpOpts"); if(box.dataset.done) return; box.dataset.done=1;
+  box.innerHTML=RPK.map(k=>`<label class="lm"><input type="checkbox" data-rp="${k}" checked><span><b>${RPL[k]}</b></span></label>`).join(""); }
+const pdfTxt=s=>String(s==null?"":s).replace(/•/g,"-").replace(/[−–—]/g,"-").replace(/≈/g,"~").replace(/[‹›]/g,"").replace(/…/g,"...").replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/→/g,"->").replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g,"");
+function chartPNG(series,labels,opt={}){ const W=1600,H=560,m={l:90,r:30,t:30,b:60}, c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
+  x.fillStyle="#fff"; x.fillRect(0,0,W,H); const all=[]; series.forEach(s=>s.v.forEach(v=>v!=null&&all.push(v))); if(!all.length) return null;
+  let lo=Math.min(...all),hi=Math.max(...all); const pad=Math.max((hi-lo)*.15,opt.minPad||1); lo-=pad; hi+=pad; const st=niceStep((hi-lo)/4); lo=Math.floor(lo/st)*st; hi=Math.ceil(hi/st)*st;
+  const n=labels.length, X=i=>m.l+i*(W-m.l-m.r)/Math.max(1,n-1), Y=v=>m.t+(hi-v)/(hi-lo)*(H-m.t-m.b);
+  x.font="26px Helvetica, Arial"; x.fillStyle="#5A6B7A"; x.strokeStyle="#D8E0E8"; x.lineWidth=2;
+  for(let v=lo;v<=hi+1e-9;v+=st){ x.beginPath(); x.moveTo(m.l,Y(v)); x.lineTo(W-m.r,Y(v)); x.stroke(); x.textAlign="right"; x.fillText(String(Math.round(v*10)/10).replace(".",","),m.l-12,Y(v)+9); }
+  x.textAlign="center"; labels.forEach((l,i)=>{ if(l!=="") x.fillText(l,X(i),H-18); });
+  series.forEach(s=>{ x.strokeStyle=s.c; x.fillStyle=s.c; x.lineWidth=s.w||5; x.setLineDash(s.dash?[14,12]:[]); x.beginPath(); let started=false;
+    s.v.forEach((v,i)=>{ if(v==null){ if(!s.join) started=false; return; } if(!started){ x.moveTo(X(i),Y(v)); started=true; } else x.lineTo(X(i),Y(v)); }); x.stroke(); x.setLineDash([]);
+    if(s.dots) s.v.forEach((v,i)=>{ if(v!=null){ x.beginPath(); x.arc(X(i),Y(v),7,0,7); x.fill(); } }); });
+  return c.toDataURL("image/png"); }
+async function gerarRelatorio(){ const msg=$("rpMsg"), sel=new Set([...document.querySelectorAll("[data-rp]")].filter(i=>i.checked).map(i=>i.dataset.rp));
+  if(!sel.size){ msg.textContent="Escolha ao menos uma seção."; return; }
+  msg.textContent="Gerando o PDF…"; $("rpGo").disabled=true;
+  try{ if(!window.jspdf) await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"); }catch(e){ msg.textContent="Não consegui carregar o gerador de PDF. Verifique a internet e tente de novo."; $("rpGo").disabled=false; return; }
+  try{
+  const {jsPDF}=window.jspdf, doc=new jsPDF({unit:"mm",format:"a4"}), PW=210, ML=16, CW=PW-2*ML; let y=0;
+  const D=derive(), NAVY=[13,39,70], ORG=[217,138,18], MUT=[90,107,122];
+  const newPage=()=>{ doc.addPage(); y=18; };
+  const need=h=>{ if(y+h>282) newPage(); };
+  const H1=t=>{ need(14); y+=4; doc.setFont("helvetica","bold"); doc.setFontSize(13); doc.setTextColor(...NAVY); doc.text(pdfTxt(t),ML,y); doc.setDrawColor(...ORG); doc.setLineWidth(.6); doc.line(ML,y+1.8,ML+18,y+1.8); y+=8; };
+  const P=(t,o={})=>{ doc.setFont("helvetica",o.b?"bold":"normal"); doc.setFontSize(o.s||10); doc.setTextColor(...(o.c||[20,32,48])); const L=doc.splitTextToSize(pdfTxt(t),o.w||CW); L.forEach(l=>{ need(5); doc.text(l,o.x||ML,y); y+=(o.s||10)*.45; }); y+=1.2; };
+  const KV=(pairs)=>{ const cw=CW/pairs.length; need(14); pairs.forEach(([k,v],i)=>{ doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...MUT); doc.text(pdfTxt(k.toUpperCase()),ML+i*cw,y); doc.setFont("helvetica","bold"); doc.setFontSize(13); doc.setTextColor(20,32,48); doc.text(pdfTxt(v),ML+i*cw,y+6); }); y+=13; };
+  const TB=(head,rows,wd)=>{ const ws=wd.map(w=>w*CW); const row=(cells,b)=>{ const lines=cells.map((c,i)=>doc.splitTextToSize(pdfTxt(c),ws[i]-2)); const h=Math.max(...lines.map(l=>l.length))*4.2+2.4; need(h);
+      if(b){ doc.setFillColor(234,240,245); doc.rect(ML,y-3.6,CW,h,"F"); }
+      doc.setFont("helvetica",b?"bold":"normal"); doc.setFontSize(8.6); doc.setTextColor(20,32,48); let xx=ML; lines.forEach((l,i)=>{ doc.text(l,xx+1,y); xx+=ws[i]; }); y+=h; doc.setDrawColor(216,224,232); doc.setLineWidth(.2); doc.line(ML,y-3.6,ML+CW,y-3.6); };
+    row(head,true); rows.forEach(r=>row(r,false)); y+=3; };
+  const IMG=(png,h)=>{ if(!png) return; need(h+2); doc.addImage(png,"PNG",ML,y,CW,h); y+=h+3; };
+  // capa
+  doc.setFillColor(...NAVY); doc.rect(0,0,PW,40,"F"); doc.setTextColor(255,255,255); doc.setFont("helvetica","bold"); doc.setFontSize(20); doc.text("Rumo aos 90 kg",ML,18);
+  doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.text(pdfTxt(`Relatório de acompanhamento · gerado em ${today.toLocaleDateString("pt-BR")} · semana ${curWeek} do plano (início 28/10/2026)`),ML,27);
+  doc.setFontSize(8.5); doc.setTextColor(242,169,59); doc.text("Desenvolvido por TEX Engenharia & Inovação",ML,34); y=50;
+  KV([["Peso atual",fmt(D.last)+" kg"],["Desde junho",(D.perdaJun>0?"-":"+")+fmt(Math.abs(D.perdaJun))+" kg"],["No plano",(D.perdaPlano>0?"-":"+")+fmt(Math.abs(D.perdaPlano))+" kg"],["Falta p/ 90",fmt(D.falta)+" kg"]]);
+  KV([["Ritmo",D.ritmo==null?"-":fmt(D.ritmo,2)+" kg/sem"],["IMC",fmt(D.imc)],["Treinos",D.ader==null?"-":Math.round(D.ader*100)+"%"],["Dieta seguida",D.dietAvg==null?"-":Math.round(D.dietAvg*100)+"%"]]);
+  const alerts=buildAlerts(D).filter(a=>a[0]==="warn"||a[0]==="bad"); if(alerts.length){ H1("Pontos de atenção"); alerts.forEach(a=>P("• "+a[1]+": "+a[2])); }
+  if(sel.has("peso")){ H1("Peso, cintura e medidas");
+    const lab=Array.from({length:NDAYS},(_,i)=>i%7===0?"S"+(i/7+1):"");
+    const anyD=D.raw.some(v=>v!=null);
+    IMG(anyD?chartPNG([{v:Array.from({length:NDAYS},(_,i)=>P0.ini-(P0.ini-P0.m12)*(i+1)/NDAYS),c:"#D98A12",dash:1,w:4},{v:D.ma,c:"#1E5AA8",join:1,w:6},{v:D.raw,c:"#9AA8B5",w:0,dots:1}],lab,{minPad:.6}):chartPNG([{v:Array.from({length:12},(_,i)=>traj(i+1)),c:"#D98A12",dash:1},{v:D.pesos,c:"#1E5AA8",dots:1}],Array.from({length:12},(_,i)=>"S"+(i+1))),56);
+    P(anyD?"Azul: média de 7 dias do peso em jejum. Pontos cinza: pesagens. Laranja tracejado: trajetória planejada (118 -> 113 kg em 12 semanas).":"Azul: peso médio semanal. Laranja tracejado: trajetória planejada.",{s:8,c:MUT});
+    const rows=[]; for(let w=1;w<=12;w++){ const s=S.semanas[w]||{}, av=D.pesos[w-1]; if(av==null&&s.cint==null&&s.sono==null) continue; rows.push([`${w} (${dm(addDays(START,(w-1)*7))})`,av!=null?fmt(av):"-",fmt(traj(w)),s.cint!=null?fmt(num(s.cint)):"-",s.sono!=null?fmt(num(s.sono)):"-",D.tre[w-1]!=null?String(D.tre[w-1]):"-",D.prot[w-1]!=null?fmt(D.prot[w-1],0):"-"]); }
+    if(rows.length) TB(["Semana","Peso (kg)","Meta (kg)","Cintura","Sono (h)","Treinos","Proteína (g)"],rows,[.2,.13,.13,.13,.13,.13,.15]); }
+  if(sel.has("pressao")){ H1("Pressão arterial");
+    const rows=[]; for(let d=1;d<=14;d++){ const p=S.pa[d]; if(p&&(p.ms||p.ns||p.md||p.nd)) rows.push([`${d} (${dm(addDays(START,d-1))})`,`${p.ms||"-"}/${p.md||"-"}`,`${p.ns||"-"}/${p.nd||"-"}`,p.tont?"sim":"não",p.obs||""]); }
+    for(let w=1;w<=12;w++){ const s=S.semanas[w]; if(s&&s.pas) rows.push([`Semana ${w}`,`${s.pas}/${s.pad||"-"}`,"","",""]); }
+    if(rows.length) TB(["Dia","Manhã (mmHg)","Noite (mmHg)","Tontura","Observação"],rows,[.18,.18,.18,.12,.34]); else P("Sem aferições registradas.",{c:MUT}); }
+  if(sel.has("treino")){ H1("Treino e cargas");
+    if(!EXS.length) P("Sem ficha de treino importada.",{c:MUT});
+    else { P(`Ficha: ${S.treinoPlan.fonte||"arquivo"} (desde ${dm(parseKey(S.treinoPlan.d))}). Treinos concluídos no plano: ${Object.values(S.diario).filter(d=>d&&d.treino).length}. Aderência média: ${D.ader==null?"-":Math.round(D.ader*100)+"%"}.`);
+      const rows=EXS.map(e=>{ const h=S.cargas[e[1]]||{}, ws=Object.keys(h).map(Number).filter(w=>num(h[w])!=null).sort((a,b)=>a-b); return [`${e[0]} · ${e[1]}`,e[2],e[5]||"-",ws.length?`${fmt(num(h[ws[0]]))} (s${ws[0]})`:"-",ws.length?`${fmt(num(h[ws[ws.length-1]]))} (s${ws[ws.length-1]})`:"-",ws.length>1?((num(h[ws[ws.length-1]])/num(h[ws[0]])-1)*100).toFixed(0)+"%":"-"]; });
+      TB(["Exercício","Séries","Indicada","Primeira","Última","Variação"],rows,[.34,.13,.15,.13,.13,.12]); } }
+  if(sel.has("dieta")){ H1("Dieta e proteína");
+    if(!MEALS.length) P("Sem dieta importada.",{c:MUT});
+    else { P(`Dieta: ${S.dieta.fonte||"arquivo"} (desde ${dm(parseKey(S.dieta.d))})${S.dieta.kcal_total?` · ${fmt(S.dieta.kcal_total,0)} kcal`:""} · meta de proteína ${P0.prot} g/dia.`);
+      const rows=[]; for(let w=1;w<=12;w++){ const a=dietWeek(w), p=D.prot[w-1]; if(a==null&&p==null) continue; rows.push([`Semana ${w}`,a==null?"-":Math.round(a*100)+"%",p==null?"-":fmt(p,0)+" g"]); }
+      if(rows.length) TB(["Semana","Refeições seguidas","Proteína média/dia"],rows,[.34,.33,.33]); else P("Sem refeições marcadas ainda.",{c:MUT}); } }
+  if(sel.has("exames")){ H1("Exames");
+    const rows=EXAMES.filter(e=>e[2]!=null||num(S.exames[e[0]])!=null).map(e=>{ const nv=num(S.exames[e[0]]); return [e[0],e[1],e[2]==null?"-":String(e[2]).replace(".",","),nv==null?"-":String(nv).replace(".",","),nv!=null&&e[2]!=null?((nv-e[2])>0?"+":"")+fmt(nv-e[2],Math.abs(nv-e[2])<10?2:0):"-"]; });
+    (S.exames._extras||[]).forEach(x=>rows.push([x.n,x.u||"","-",String(x.v).replace(".",","),"-"]));
+    TB(["Exame","Unidade","Jun/2026",S.exames._data?`Recente (${parseKey(S.exames._data).toLocaleDateString("pt-BR")})`:"Recente","Diferença"],rows,[.3,.16,.16,.22,.16]); }
+  if(sel.has("remedios")){ H1("Remédios em uso e checklist");
+    TB(["Horário","Remédio","Observação"],MEDS.map(m=>[m[0],m[1],m[2]]),[.16,.36,.48]);
+    TB(["Status","Assunto","Resposta"],CHECK.map((t,i)=>{ const c=S.check[i]||{}; return [c.st||"Pendente",t,c.nota||""]; }),[.16,.5,.34]); }
+  if(sel.has("notas")){ H1("Anotações e sintomas"); const N=S.notas||{}; let any=false;
+    if(N.treino){ P("Treino:",{b:1}); P(N.treino); any=true; } if(N.comida){ P("Alimentação:",{b:1}); P(N.comida); any=true; }
+    for(let w=1;w<=12;w++){ const s=S.semanas[w]; if(s&&(s.sint||s.obs)){ P(`Semana ${w}: ${[s.sint,s.obs].filter(Boolean).join(" · ")}`); any=true; } }
+    const R=(S.resumos||[])[0]; if(R){ P(`Resumo da semana ${R.w} (IA): ${R.t}`,{b:1}); [...R.l].forEach(x=>P("• "+x)); any=true; }
+    if(!any) P("Sem anotações.",{c:MUT}); }
+  const n=doc.getNumberOfPages(); for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(...MUT); doc.text(pdfTxt(`Rumo aos 90 kg · dados registrados pelo paciente · página ${i} de ${n}`),ML,292); }
+  const blob=doc.output("blob"), name=`rumo90-relatorio-${TK}.pdf`;
+  const r=await shareOrSave(blob,name,"Relatório Rumo 90"); msg.textContent=r==="shared"?"PDF compartilhado.":r==="cancel"?"Compartilhamento cancelado.":"PDF salvo.";
+  }catch(e){ msg.textContent="Não foi possível gerar o PDF aqui."; }
+  $("rpGo").disabled=false; }
+$("rpGo").onclick=gerarRelatorio;
+
 /* ============ navegação ============ */
-const VIEWS=["hoje","painel","treino","comida","mais","semana","pressao","cargas","exames","consulta","fotos"];
-const PRIMARY={semana:"mais",pressao:"mais",cargas:"mais",exames:"mais",consulta:"mais",fotos:"mais"};
+const VIEWS=["hoje","painel","treino","comida","mais","semana","pressao","cargas","exames","consulta","fotos","relatorio","lembretes"];
+const PRIMARY={relatorio:"mais",lembretes:"mais",semana:"mais",pressao:"mais",cargas:"mais",exames:"mais",consulta:"mais",fotos:"mais"};
 let view="hoje";
 function go(v,opts={}){ if(!VIEWS.includes(v)) v="hoje"; view=v;
   document.querySelectorAll(".view").forEach(s=>s.hidden=s.dataset.v!==v);
@@ -1350,8 +1693,9 @@ function go(v,opts={}){ if(!VIEWS.includes(v)) v="hoje"; view=v;
   renderView(); if(!opts.keepScroll) window.scrollTo({top:0}); }
 function renderView(){ const D=derive();
   if(view==="hoje") renderHoje(D); else if(view==="painel") renderPainel(D); else if(view==="treino") renderTreino(); else if(view==="comida") renderComida();
-  else if(view==="semana") renderSemana(); else if(view==="pressao") renderPA(); else if(view==="cargas") renderCargas(); else if(view==="exames") renderExames(); else if(view==="consulta") renderConsulta(); else if(view==="fotos") renderFotos();
+  else if(view==="semana") renderSemana(); else if(view==="pressao") renderPA(); else if(view==="cargas") renderCargas(); else if(view==="exames") renderExames(); else if(view==="consulta") renderConsulta(); else if(view==="fotos") renderFotos(); else if(view==="relatorio") renderRelatorio(); else if(view==="lembretes") renderLembretes();
   if(ATT[view]) renderAtt(view);
+  checkConq(D);
   renderCover(D); }
 function renderAll(){ renderView(); }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-go]"); if(!t) return; if(t.dataset.meal){ focusMeal=t.dataset.meal; } go(t.dataset.go); });
@@ -1371,7 +1715,7 @@ async function flush(){
     finally{ writing=false; if(dirty) flush(); } }
   else saveLocal(); }
 function saveLocal(){ try{ localStorage.setItem(LS,JSON.stringify(S)); setSave("local","Salvo neste navegador"); }catch(e){ setSave("err","Sem onde salvar aqui"); } dirty=false; }
-function adopt(d){ if(!d) return; S=Object.assign(EMPTY(),d); applyPlans(); renderAll(); }
+function adopt(d){ if(!d) return; S=Object.assign(EMPTY(),d); ready=true; applyPlans(); renderAll(); }
 
 applyPlans();
 go(VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"hoje",{keepScroll:true});
@@ -1384,12 +1728,12 @@ go(VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):"hoje",{keepScr
     if(db&&uid){ mode="db"; ref=db.doc("data/users/"+uid+"/plano"); let first=true;
       ref.onSnapshot(snap=>{ if(snap.metadata.hasPendingWrites||dirty||writing){ first=false; return; }
         if(snap.exists) adopt(snap.data());
-        if(first){ setSave("ok",snap.exists?"Salvo no celular":"Pronto para registrar"); first=false; } },
+        if(first){ setSave("ok",snap.exists?"Salvo no celular":"Pronto para registrar"); first=false; if(!ready){ ready=true; renderView(); } } },
         ()=>setSave("err","Conexão perdida; recarregue"));
       return; }
   }catch(e){}
   mode="local";
-  try{ const raw=localStorage.getItem(LS); if(raw) adopt(JSON.parse(raw)); setSave("local","Salvando neste navegador"); }catch(e){ setSave("err","Sem onde salvar aqui"); }
+  try{ const raw=localStorage.getItem(LS); if(raw) adopt(JSON.parse(raw)); ready=true; setSave("local","Salvando neste navegador"); }catch(e){ setSave("err","Sem onde salvar aqui"); }
 })();
 })();
 </script>
@@ -1401,7 +1745,7 @@ const R=window.__rumo, $=id=>document.getElementById(id);
 const panel=$("btnCsv").closest(".panel");
 const box=document.createElement("div"); box.style.cssText="display:grid;gap:12px;margin-top:16px";
 box.innerHTML=`<div class="row"><button class="btn" type="button" id="bkOut">Fazer backup</button><label class="btn ghost" for="bkIn" style="display:inline-block">Restaurar backup</label><input type="file" id="bkIn" accept="application/json,.json" hidden><span class="sub" id="bkMsg"></span></div>
-<p class="foot" style="margin:0">O backup guarda todos os registros num arquivo. Os anexos e as fotos não entram no backup.</p>
+<p class="foot" style="margin:0">O backup guarda tudo num arquivo: registros, anexos e fotos. No celular, ele abre o Compartilhar para você mandar ao Drive, ao e-mail ou ao WhatsApp.</p>
 <div style="border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px">
   <b>Leitura automática (laudos, dieta e treino)</b>
   <p class="sub" style="margin:0">Usa a API da Anthropic com a sua chave. Crie a chave em console.anthropic.com, em API Keys. O custo é cobrado na sua conta da API, centavos por leitura. A chave fica guardada só neste celular.</p>
@@ -1416,15 +1760,29 @@ $("aiSave").onclick=()=>{ const k=$("aiKey").value.trim(), m=$("aiModel").value.
   if(k&&!k.startsWith("••")) c.key=k; c.model=m||undefined; if(!c.key){ $("aiMsg").textContent="Informe a chave."; return; }
   localStorage.setItem("rumo90-ai",JSON.stringify(c)); $("aiKey").value="••••••••"+c.key.slice(-4); $("aiMsg").textContent="Chave salva neste celular."; };
 $("aiClear").onclick=()=>{ localStorage.removeItem("rumo90-ai"); $("aiKey").value=""; $("aiModel").value=""; $("aiMsg").textContent="Chave removida."; };
+async function b64of(blob){ const b=new Uint8Array(await blob.arrayBuffer()); let s=""; for(let i=0;i<b.length;i+=32768) s+=String.fromCharCode.apply(null,b.subarray(i,i+32768)); return btoa(s); }
+function lastBkTxt(){ let lb=null; try{ lb=localStorage.getItem("rumo90-lastbk"); }catch(e){} return lb?"Último backup: "+new Date(lb).toLocaleDateString("pt-BR")+".":"Nenhum backup feito ainda."; }
+$("bkMsg").textContent=lastBkTxt();
 $("bkOut").onclick=async()=>{ const d=await R.kv.get(R.PATH); if(!d){ $("bkMsg").textContent="Ainda não há registros para salvar."; return; }
-  const blob=new Blob([JSON.stringify({app:"rumo90",versao:1,salvo:new Date().toISOString(),dados:d},null,1)],{type:"application/json"});
-  const u=URL.createObjectURL(blob), a=document.createElement("a"); a.href=u; a.download=`rumo90-backup-${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),5000);
-  $("bkMsg").textContent="Backup gerado."; };
+  $("bkMsg").textContent="Preparando o backup…";
+  const ids=new Set(); Object.values(d.anexos||{}).forEach(L=>(L||[]).forEach(a=>a&&a.id&&ids.add(a.id))); (d.fotos||[]).forEach(f=>f&&f.id&&ids.add(f.id));
+  const blobsOut={}; let miss=0; for(const id of ids){ const v=await R.blobs.get(id); if(v&&v.blob) blobsOut[id]={type:v.type||v.blob.type,b64:await b64of(v.blob)}; else miss++; }
+  const json=JSON.stringify({app:"rumo90",versao:2,salvo:new Date().toISOString(),dados:d,arquivos:blobsOut});
+  const blob=new Blob([json],{type:"application/json"}), name=`rumo90-backup-${new Date().toISOString().slice(0,10)}.json`, mb=(blob.size/1048576).toFixed(1).replace(".",",");
+  let how="saved";
+  try{ const f=new File([blob],name,{type:"application/json"}); if(navigator.canShare&&navigator.canShare({files:[f]})){ await navigator.share({files:[f],title:"Backup Rumo 90"}); how="shared"; } else throw 0; }
+  catch(e){ if(e&&e.name==="AbortError"){ $("bkMsg").textContent="Backup cancelado."; return; }
+    const u=URL.createObjectURL(blob), a=document.createElement("a"); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),5000); }
+  try{ localStorage.setItem("rumo90-lastbk",new Date().toISOString()); }catch(e){}
+  $("bkMsg").textContent=`Backup ${how==="shared"?"enviado":"salvo"} (${mb} MB, ${Object.keys(blobsOut).length} arquivo(s))${miss?`; ${miss} arquivo(s) não encontrado(s)`:""}. Guarde no Drive, no e-mail ou no WhatsApp.`; };
 let pend=null;
 $("bkIn").addEventListener("change",async e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return;
   try{ const j=JSON.parse(await f.text()); const d=j&&j.app==="rumo90"?j.dados:j; if(!d||typeof d!=="object"||!("semanas" in d||"diario" in d)) throw 0;
-    pend=d; $("bkMsg").innerHTML=`Backup de ${j.salvo?new Date(j.salvo).toLocaleDateString("pt-BR"):"data desconhecida"}. Isto substitui os registros atuais. <button class="btn small" type="button" id="bkOk">Restaurar agora</button>`;
-    $("bkOk").onclick=async()=>{ await R.kv.set(R.PATH,pend); location.reload(); };
+    const nArq=j.arquivos?Object.keys(j.arquivos).length:0;
+    pend={d,arq:j.arquivos||{}}; $("bkMsg").innerHTML=`Backup de ${j.salvo?new Date(j.salvo).toLocaleDateString("pt-BR"):"data desconhecida"}${nArq?`, com ${nArq} anexo(s) e foto(s)`:""}. Isto substitui os registros atuais. <button class="btn small" type="button" id="bkOk">Restaurar agora</button>`;
+    $("bkOk").onclick=async()=>{ $("bkMsg").textContent="Restaurando…";
+      for(const [id,v] of Object.entries(pend.arq)){ try{ const bin=atob(v.b64), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); await R.blobs.set(id,{blob:new Blob([u],{type:v.type}),type:v.type}); }catch(err){} }
+      await R.kv.set(R.PATH,pend.d); location.reload(); };
   }catch(err){ $("bkMsg").textContent="Arquivo de backup inválido."; } });
 /* abrir anexos dentro do app */
 document.addEventListener("click",async e=>{ const a=e.target.closest('a[href*="_blob/"]'); if(!a) return; e.preventDefault();
