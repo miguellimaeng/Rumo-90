@@ -323,6 +323,15 @@ details summary{cursor:pointer;font-size:.86rem;font-weight:600;color:var(--acce
 .rs-s ul{margin:4px 0 0;padding-left:18px;display:grid;gap:3px;font-size:.9rem}
 .rs-s.ok{border-color:var(--ok)} .rs-s.warn{border-color:var(--warn)} .rs-s.acc{border-color:var(--accent)}
 .rs-f{background:var(--accent-soft);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:.92rem}
+.aibar2{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));z-index:45;width:min(560px,calc(100% - 24px));box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:10px 10px 10px 14px;border-radius:14px;background:var(--ink);color:var(--bg);box-shadow:var(--shadow);font-size:.88rem}
+.aibar2[data-s="err"]{background:var(--bad);color:#fff}
+.aibar2[data-s="ok"]{background:var(--ok);color:#fff}
+.aibar2 .aib-t{flex:1;min-width:0}
+.aibar2 button{border:0;border-radius:9px;padding:7px 11px;font-weight:650;cursor:pointer;background:rgba(127,127,127,.3);color:inherit;white-space:nowrap}
+.aibar2 button.pri{background:#fff;color:#132030}
+.aibar2 .aib-ic{font-weight:800;width:18px;text-align:center}
+.spin{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .8s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
 /* rodapé */
 .brandfoot{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;padding-top:18px;border-top:1px solid var(--line)}
 .brandfoot img{width:56px;height:56px;border-radius:50%}
@@ -658,6 +667,7 @@ function parseJ(t){ try{ return JSON.parse(t); }catch(e){} const f=t.match(/```(
   throw {code:"invalid_json",text:t}; }
 async function call(prompt,o){ const c=cfg(); if(!c.key) throw {code:"no_key"};
   const content=[]; for(const im of (o&&o.images)||[]) content.push({type:"image",source:{type:"base64",media_type:im.type||"image/jpeg",data:await b64(im)}});
+  if(o&&o.pdf) content.push({type:"document",source:{type:"base64",media_type:"application/pdf",data:await b64(o.pdf)}});
   content.push({type:"text",text:prompt});
   const web=!!(o&&o.web); window.__lastSearchUrls=[]; window.__lastWeb=false;
   let msgs=[{role:"user",content}], useWeb=web, out=[];
@@ -666,9 +676,14 @@ async function call(prompt,o){ const c=cfg(); if(!c.key) throw {code:"no_key"};
     if(useWeb) body.tools=[{type:"web_search_20250305",name:"web_search",max_uses:6}];
     let r; try{ r=await _fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal:o&&o.signal,headers:{"content-type":"application/json","x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify(body)}); }
     catch(e){ if(e&&e.name==="AbortError") throw {code:"cancelled"}; throw {code:"offline"}; }
-    if(r.status===401||r.status===403) throw {code:"bad_key"}; if(r.status===429) throw {code:"rate_limited"}; if(r.status===413) throw {code:"prompt_too_large"};
-    if(r.status===400&&useWeb&&round===0){ useWeb=false; round=-1; continue; }
-    if(!r.ok) throw {code:"upstream_error"};
+    if(!r.ok){ let det="",typ=""; try{ const ej=await r.json(); det=(ej.error&&ej.error.message)||""; typ=(ej.error&&ej.error.type)||""; }catch(e){}
+      if(r.status===400&&useWeb&&round===0&&!/credit|billing/i.test(det)){ useWeb=false; round=-1; continue; }
+      if(/credit balance|billing/i.test(det)) throw {code:"no_credit",detail:det};
+      if(r.status===401||r.status===403) throw {code:"bad_key",detail:det};
+      if(r.status===404||(r.status===400&&/model/i.test(det)&&/not.?found|does not exist|invalid model|unknown model/i.test(det))) throw {code:"bad_model",detail:det};
+      if(r.status===429) throw {code:"rate_limited",detail:det}; if(r.status===413) throw {code:"prompt_too_large",detail:det};
+      if(r.status===529||r.status===503) throw {code:"upstream_error",detail:"servidor da API ocupado; tente em alguns minutos"};
+      throw {code:"upstream_error",detail:`erro ${r.status}${det?": "+det:""}`}; }
     const j=await r.json(); const blocks=j.content||[];
     blocks.forEach(b=>{ if(b.type==="web_search_tool_result"&&Array.isArray(b.content)) b.content.forEach(x=>{ if(x&&x.url) window.__lastSearchUrls.push(x.url); }); if(b.type==="server_tool_use") window.__lastWeb=true; });
     out=blocks;
@@ -1294,7 +1309,7 @@ function srcBanner(sec){ const el=$("src_"+sec); if(!el) return; const p=sec==="
     srcPend=null; const H=sec==="treino"?"treinoHist":"dietaHist", K=sec==="treino"?"treinoPlan":"dieta"; const prev=S[H].pop(); S[H].unshift(S[K]); S[H]=S[H].slice(-5); S[K]=prev;
     applyPlans(); save(); toast(sec==="treino"?"Ficha anterior restaurada":"Dieta anterior restaurada"); renderView(); };
 }
-async function importFlow(sec,f,ui){ if(assets){ ui.msg.textContent=`Guardando ${f.name}…`; await uploadAtt(sec,f,ui.msg); } runAI(sec,f,f.name,ui); }
+async function importFlow(sec,f,ui){ aiBar("busy",`Guardando ${f.name}…`); if(assets){ await uploadAtt(sec,f,{set textContent(t){ if(t) aiBar("err",t); }}); } runAI(sec,f,f.name,ui); }
 window.__rumoImport=(sec,f)=>{ go(sec); setTimeout(()=>{ const m=$("impm_"+sec); importFlow(sec,f,m?{msg:m,stop:$("imps_"+sec)}:{msg:$("am_"+sec),stop:$("aistop_"+sec)}); },80); };
 window.__rumoAttach=async(sec,f)=>{ go(sec); if(!assets) return; await uploadAtt(sec,f,$("am_"+sec)||{set textContent(v){}}); toast("Arquivo anexado"); renderView(); };
 
@@ -1305,6 +1320,7 @@ function pdfLib(){ return pdfReady||(pdfReady=(async()=>{ await loadScript("http
 async function readSource(file){
   const t=file.type||extType(file.name||"");
   if(/pdf/.test(t)||/\.pdf$/i.test(file.name||"")){
+    if(window.__PWA){ if(file.size>30*1048576) throw {code:"prompt_too_large"}; return {text:"",images:[],pdf:file}; }
     let lib; try{ lib=await pdfLib(); }catch(e){ throw {code:"pdf_load"}; }
     const doc=await lib.getDocument({data:new Uint8Array(await file.arrayBuffer()),isEvalSupported:false}).promise;
     const N=Math.min(doc.numPages,15); let text="";
@@ -1324,7 +1340,7 @@ async function readSource(file){
 }
 const EXNAMES=EXAMES.map(e=>e[0]);
 function buildPrompt(sec,text,hasImg){
-  const src=hasImg?"O documento está nas imagens anexadas.":"Conteúdo extraído do documento:\n<<<\n"+text+"\n>>>";
+  const src=hasImg?"O documento está anexado a esta mensagem.":"Conteúdo extraído do documento:\n<<<\n"+text+"\n>>>";
   if(sec==="exames") return `Você vai ler um laudo de exames laboratoriais de um paciente adulto e extrair os resultados medidos. ${src}
 
 Responda somente com JSON neste formato:
@@ -1345,20 +1361,32 @@ Responda somente com JSON neste formato:
 
 Regras: um item em "treinos" por divisão (A, B, C...), na ordem da ficha. "dias" só se a ficha indicar os dias da semana (use seg, ter, qua, qui, sex, sab, dom); senão, lista vazia. "series" é inteiro; "reps" é texto como na ficha (ex.: "12", "10–12", "12/10/8", "até a falha", "30 s"). "carga" é a carga indicada como está escrita na ficha; "carga_kg" é o número em kg só quando der para saber (a carga total do exercício), senão null. "descanso_s" em segundos, ou null. Métodos (drop-set, bi-set, rest-pause) vão em "obs". Aquecimento e cardio só se estiverem na ficha, como exercício. "dicas": até 10 orientações gerais do personal (aquecimento, progressão de carga, cardio, frequência). Não invente exercícios, cargas nem dicas.`;
 }
-function aiErr(e){ const c=e&&e.code; return ({not_granted:"A leitura com IA não foi autorizada neste app.",sampling_disabled:"A leitura com IA não está disponível para esta conta.",images_unavailable:"Leitura de fotos indisponível aqui. Tente um PDF com texto.",scan_no_images:"Este PDF é uma imagem escaneada e a leitura de imagens não está disponível aqui.",image_rejected:"A imagem não pôde ser lida. Tente outra foto, mais nítida.",invalid_json:"Não consegui organizar a leitura. Tente de novo.",rate_limited:"Muitas leituras seguidas. Tente de novo em alguns minutos.",cancelled:"Leitura cancelada.",refused:"Não foi possível ler este arquivo.",pdf_load:"Não consegui abrir o leitor de PDF. Verifique a conexão e tente de novo.",empty:"O arquivo parece vazio.",no_key:"Configure a chave da leitura automática em Mais › Consulta.",bad_key:"Chave da API inválida ou sem crédito. Confira em Mais › Consulta.",offline:"Sem internet. A leitura automática precisa de conexão.",prompt_too_large:"Arquivo grande demais para ler de uma vez. Envie só as páginas principais."})[c]||"Não foi possível ler agora. Tente de novo."; }
+function aiErr(e){ const c=e&&e.code; const base=({no_credit:"A conta da API está sem crédito. Adicione crédito em console.anthropic.com (Billing).",bad_model:"O modelo configurado não existe. Em Mais › Consulta e ajustes, deixe o campo Modelo em branco.",not_granted:"A leitura com IA não foi autorizada neste app.",sampling_disabled:"A leitura com IA não está disponível para esta conta.",images_unavailable:"Leitura de fotos indisponível aqui. Tente um PDF com texto.",scan_no_images:"Este PDF é uma imagem escaneada e a leitura de imagens não está disponível aqui.",image_rejected:"A imagem não pôde ser lida. Tente outra foto, mais nítida.",invalid_json:"Não consegui organizar a leitura. Tente de novo.",rate_limited:"Muitas leituras seguidas. Tente de novo em alguns minutos.",cancelled:"Leitura cancelada.",refused:"Não foi possível ler este arquivo.",pdf_load:"Não consegui abrir o leitor de PDF. Verifique a conexão e tente de novo.",empty:"O arquivo parece vazio.",no_key:"Configure a chave da leitura automática em Mais › Consulta.",bad_key:"Chave da API inválida ou sem crédito. Confira em Mais › Consulta.",offline:"Sem internet. A leitura automática precisa de conexão.",prompt_too_large:"Arquivo grande demais para ler de uma vez. Envie só as páginas principais."})[c]||"Não foi possível ler agora. Tente de novo."; return e&&e.detail&&!["no_credit","bad_model"].includes(c)?base+" (detalhe: "+String(e.detail).slice(0,160)+")":base; }
+/* ---- barra de status da leitura (sempre visível) ---- */
+function aiBar(state,text,opts={}){ let b=$("aiBar"); if(!b){ b=document.createElement("div"); b.id="aiBar"; b.className="aibar2"; b.setAttribute("role","status"); document.body.appendChild(b); }
+  if(state==="off"){ b.hidden=true; return; }
+  b.hidden=false; b.dataset.s=state;
+  b.innerHTML=`<span class="aib-ic">${state==="busy"?'<i class="spin"></i>':state==="ok"?"✓":"!"}</span><span class="aib-t"></span><span class="row" style="gap:6px;flex-wrap:nowrap"></span>`;
+  b.querySelector(".aib-t").textContent=text;
+  const R=b.querySelector(".row");
+  const add=(l,f,pri)=>{ const x=document.createElement("button"); x.type="button"; x.textContent=l; if(pri) x.className="pri"; x.onclick=f; R.appendChild(x); };
+  if(opts.cancel) add("Cancelar",opts.cancel);
+  if(opts.key) add("Configurar chave",()=>{ aiBar("off"); go("consulta"); setTimeout(()=>{ const k=document.getElementById("aiKey"); if(k){ k.scrollIntoView({behavior:"smooth",block:"center"}); } },150); },true);
+  if(state!=="busy") add("Fechar",()=>aiBar("off"));
+  if(state==="ok") setTimeout(()=>{ if(b.dataset.s==="ok") aiBar("off"); },5000); }
 async function runAI(sec,file,fname,ui){
-  const msg=(ui&&ui.msg)||$("am_"+sec), stop=(ui&&ui.stop)||$("aistop_"+sec); if(!SAMPLE){ msg.textContent="A leitura com IA não está disponível nesta visualização."; return; }
-  const ctl=new AbortController(); if(stop){ stop.hidden=false; stop.onclick=()=>ctl.abort(); }
+  const say=t=>{ const el=$("impm_"+sec)||$("am_"+sec); if(el) el.textContent=t; };
+  if(!SAMPLE){ aiBar("err","A leitura com IA não está disponível nesta visualização."); return; }
+  const ctl=new AbortController(), what=AI[sec].what;
   try{
-    msg.textContent="Abrindo o arquivo…";
+    aiBar("busy",`Abrindo ${fname}…`,{cancel:()=>ctl.abort()});
     const src=await readSource(file); if(ctl.signal.aborted) throw {code:"cancelled"};
-    if(!src.text.trim()&&!src.images.length) throw {code:"empty"};
-    msg.textContent=`Lendo ${AI[sec].what} com IA… pode levar até um minuto.`;
-    const opts={signal:ctl.signal,modelTier:"default",cache:false}; if(src.images.length) opts.images=src.images;
-    const data=await SAMPLE.json(buildPrompt(sec,src.text,!!src.images.length),opts);
-    msg.textContent=""; showReview(sec,data,fname,msg);
-  }catch(e){ msg.textContent=aiErr(e); }
-  finally{ if(stop) stop.hidden=true; }
+    if(!src.text.trim()&&!src.images.length&&!src.pdf) throw {code:"empty"};
+    aiBar("busy",`Lendo ${what} com IA… pode levar até um minuto.`,{cancel:()=>ctl.abort()});
+    const opts={signal:ctl.signal,modelTier:"default",cache:false}; if(src.images.length) opts.images=src.images; if(src.pdf) opts.pdf=src.pdf;
+    const data=await SAMPLE.json(buildPrompt(sec,src.text,!!(src.images.length||src.pdf)),opts);
+    aiBar("off"); say(""); showReview(sec,data,fname,{set textContent(t){ if(t){ say(t); aiBar("err",t); } }});
+  }catch(e){ const t=aiErr(e); say(t); if(e&&e.code==="cancelled") aiBar("off"); else aiBar("err",t,{key:["no_key","bad_key","no_credit","bad_model"].includes(e&&e.code)}); }
 }
 
 /* ---- dicas complementares (pesquisa) ---- */
@@ -1457,7 +1485,7 @@ function showReview(sec,data,fname,msgEl){
       S.dieta={kcal_total:num(data.kcal_total),proteina_total_g:num(data.proteina_total_g),agua:data.agua?String(data.agua).slice(0,60):null,
         refeicoes:M.slice(0,8).map(r=>({nome:String(r.nome||"").slice(0,40),horario:String(r.horario||"").slice(0,10),descricao:String(r.descricao||"").slice(0,300),itens:arr(r.itens).slice(0,15).map(x=>({alimento:String(x.alimento||"").slice(0,60),quantidade:String(x.quantidade||"").slice(0,40)})),substituicoes:arr(r.substituicoes).slice(0,8).map(s=>String(s).slice(0,160)),proteina_g:num(r.proteina_g),kcal:num(r.kcal),proteina_estimada:!!r.proteina_estimada})),
         cardapio_semanal:arr(data.cardapio_semanal).slice(0,7),dicas:arr(data.dicas).slice(0,10).map(s=>String(s).slice(0,200)),observacoes:data.observacoes?String(data.observacoes).slice(0,300):"",fonte:fname,d:TK};
-      applyPlans(); save(); toast("Dieta importada"); go("comida"); });
+      applyPlans(); save(); toast("Dieta importada"); go("comida"); aiBar("ok",`Dieta lida: ${M.length} refeições.`); });
     return; }
   const T=arr(data.treinos).filter(t=>t&&arr(t.exercicios).length);
   if(!T.length){ say("Não encontrei exercícios neste arquivo."); return; }
@@ -1468,7 +1496,7 @@ function showReview(sec,data,fname,msgEl){
   openReview("Treino lido do arquivo",html,()=>{ if(S.treinoPlan) S.treinoHist=(S.treinoHist||[]).concat([S.treinoPlan]).slice(-5);
     S.treinoPlan={treinos:T.slice(0,7).map(t=>({codigo:t.codigo,nome:String(t.nome||"").slice(0,50),dias:arr(t.dias),exercicios:t.exercicios.slice(0,25).map(e=>({nome:String(e.nome||"").slice(0,60),series:parseInt(e.series)||null,reps:String(e.reps||"").slice(0,24),carga:e.carga?String(e.carga).slice(0,40):"",carga_kg:num(e.carga_kg),descanso_s:num(e.descanso_s),obs:e.obs?String(e.obs).slice(0,160):""}))})),
       dicas:arr(data.dicas).slice(0,10).map(s=>String(s).slice(0,200)),observacoes:data.observacoes?String(data.observacoes).slice(0,300):"",fonte:fname,d:TK};
-    trT=null; applyPlans(); save(); toast("Ficha importada"); go("treino"); });
+    trT=null; applyPlans(); save(); toast("Ficha importada"); go("treino"); aiBar("ok",`Ficha lida: ${T.length} treino(s) e ${T.reduce((a,t)=>a+t.exercicios.length,0)} exercícios.`); });
 }
 
 /* ============ RECURSOS EXTRAS ============ */
@@ -1751,7 +1779,7 @@ box.innerHTML=`<div class="row"><button class="btn" type="button" id="bkOut">Faz
   <p class="sub" style="margin:0">Usa a API da Anthropic com a sua chave. Crie a chave em console.anthropic.com, em API Keys. O custo é cobrado na sua conta da API, centavos por leitura. A chave fica guardada só neste celular.</p>
   <label class="f"><span>Chave da API</span><input id="aiKey" type="password" autocomplete="off" placeholder="sk-ant-..."></label>
   <label class="f"><span>Modelo</span><input id="aiModel" autocomplete="off" placeholder="claude-sonnet-5-5"></label>
-  <div class="row"><button class="btn small" type="button" id="aiSave">Salvar chave</button><button class="btn ghost small" type="button" id="aiClear">Remover</button><span class="sub" id="aiMsg"></span></div>
+  <div class="row"><button class="btn small" type="button" id="aiSave">Salvar chave</button><button class="btn ghost small" type="button" id="aiClear">Remover</button><button class="btn ghost small" type="button" id="aiTest">Testar chave</button><span class="sub" id="aiMsg"></span></div>
 </div>`;
 panel.appendChild(box);
 const cfg=()=>{ try{ return JSON.parse(localStorage.getItem("rumo90-ai")||"{}"); }catch(e){ return {}; } };
@@ -1759,6 +1787,7 @@ const c0=cfg(); $("aiKey").value=c0.key?"••••••••"+c0.key.slice(
 $("aiSave").onclick=()=>{ const k=$("aiKey").value.trim(), m=$("aiModel").value.trim(), c=cfg();
   if(k&&!k.startsWith("••")) c.key=k; c.model=m||undefined; if(!c.key){ $("aiMsg").textContent="Informe a chave."; return; }
   localStorage.setItem("rumo90-ai",JSON.stringify(c)); $("aiKey").value="••••••••"+c.key.slice(-4); $("aiMsg").textContent="Chave salva neste celular."; };
+$("aiTest").onclick=async()=>{ $("aiMsg").textContent="Testando…"; try{ const r=await (await window.claude.use("sample"))("Responda só: ok",{}); $("aiMsg").textContent="Chave funcionando."; }catch(e){ $("aiMsg").textContent=({no_key:"Nenhuma chave salva.",bad_key:"Chave inválida.",no_credit:"Chave certa, mas a conta da API está sem crédito.",bad_model:"Modelo inválido; deixe o campo Modelo em branco.",offline:"Sem internet."})[e&&e.code]||("Falhou: "+((e&&e.detail)||(e&&e.code)||"erro desconhecido")); } };
 $("aiClear").onclick=()=>{ localStorage.removeItem("rumo90-ai"); $("aiKey").value=""; $("aiModel").value=""; $("aiMsg").textContent="Chave removida."; };
 async function b64of(blob){ const b=new Uint8Array(await blob.arrayBuffer()); let s=""; for(let i=0;i<b.length;i+=32768) s+=String.fromCharCode.apply(null,b.subarray(i,i+32768)); return btoa(s); }
 function lastBkTxt(){ let lb=null; try{ lb=localStorage.getItem("rumo90-lastbk"); }catch(e){} return lb?"Último backup: "+new Date(lb).toLocaleDateString("pt-BR")+".":"Nenhum backup feito ainda."; }
