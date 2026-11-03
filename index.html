@@ -332,6 +332,7 @@ details summary{cursor:pointer;font-size:.86rem;font-weight:600;color:var(--acce
 .aibar2 .aib-ic{font-weight:800;width:18px;text-align:center}
 .spin{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .8s linear infinite;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
+.trnota{margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--accent-soft);font-size:.88rem}
 /* rodapé */
 .brandfoot{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;padding-top:18px;border-top:1px solid var(--line)}
 .brandfoot img{width:56px;height:56px;border-radius:50%}
@@ -447,6 +448,7 @@ details summary{cursor:pointer;font-size:.86rem;font-weight:600;color:var(--acce
       <div id="trEmpty" class="panel imp" hidden></div>
       <div id="trMain" class="panel" hidden>
         <div class="tr-head"><div><h2 id="trTitle">Treino</h2><div class="sub" id="trSub"></div></div><div class="seg" id="segTr"></div></div>
+        <div class="trnota" id="trNota" hidden></div>
         <div class="prog"><i id="trProg" style="width:0%"></i></div>
         <div class="row" style="justify-content:space-between"><span class="sub" id="trCount"></span>
           <div class="row"><span class="timer" id="trTimer">1:30</span><button type="button" class="btn ghost small" id="trRest">Descanso</button></div></div>
@@ -707,7 +709,7 @@ const P0={jun:128,ini:118,meta:90,m12:113,m12lo:112,m12hi:114,alt:1.80,prot:160,
 const DEF_SIN={perda:1.5,sb:100,sa:140,db:60,da:90};
 const NDAYS=84;
 let EXS=[];
-let TR_NOME={};
+let TR_NOME={}, TR_NOTA={};
 let TRAIN_OF={};
 const EXAMES=[["Glicemia","mg/dL",92,-1],["HbA1c","%",5.6,-1],["Insulina","µUI/mL",24.3,-1],["HOMA-IR","",5.5,-1],["LDL","mg/dL",140,-1],["HDL","mg/dL",36,1],["Triglicerídeos","mg/dL",68,0],["Creatinina","mg/dL",0.74,0],["eTFG","mL/min",null,0],["Ureia","mg/dL",null,0],["Sódio","mEq/L",null,0],["Potássio","mEq/L",null,0],["Magnésio","mg/dL",null,0],["ALT (TGP)","U/L",61,-1],["AST (TGO)","U/L",32,-1],["GGT","U/L",42,-1],["Cálcio","mg/dL",null,0],["Vitamina D 25-OH","ng/mL",26,0],["Testosterona total","ng/dL",600,0],["Estradiol","pg/mL",36.9,0],["TSH","µUI/mL",1.98,0],["T4 livre","ng/dL",1.2,0]];
 const CHECK=["Confirmar motivo da furosemida 40 mg e se há restrição de líquidos","Rever olmesartana + furosemida + tadalafila/arginina diante do emagrecimento e PA ~120/80","Verificar creatinina, eTFG, ureia, sódio, potássio e magnésio antes de novembro, se indicado","Confirmar indicação, duração e monitoramento do clomifeno 50 mg/dia","Rever vitamina D3 5.000 UI/dia com 25-OH vitamina D e cálcio","Confirmar dose da CoQ10 e real necessidade","Revisar LDL, ALT e risco metabólico com os exames de novembro","Perguntar sobre creatina 3–5 g/dia (função renal, hidratação, furosemida)"];
@@ -724,15 +726,16 @@ const na=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").
 const DAYMAP={dom:0,seg:1,ter:2,qua:3,qui:4,sex:5,sab:6};
 const DEFDAYS={1:[1],2:[1,4],3:[1,3,5],4:[1,2,4,5],5:[1,2,3,4,5],6:[1,2,3,4,5,6]};
 let TCODES=[];
+const trShort=c=>{ const n=String(TR_NOME[c]||"").split("·")[0].trim(); return n&&n.length<=18?n:"Treino "+c; };
 const dayLbl=c=>Object.keys(TRAIN_OF).filter(k=>TRAIN_OF[k]===c).map(k=>DOWS[k]).join("/")||"—";
 function normCard(arr){ return ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"].map(d=>{ const r=arr.find(x=>na(x.dia).slice(0,3)===na(d).slice(0,3))||{}; return [d,r.cafe||"—",r.almoco||"—",r.lanche||"—",r.jantar||"—"]; }); }
 function applyPlans(){
   const tp=S.treinoPlan;
-  EXS=[]; TR_NOME={}; TRAIN_OF={}; TCODES=[];
+  EXS=[]; TR_NOME={}; TR_NOTA={}; TRAIN_OF={}; TCODES=[];
   if(tp&&Array.isArray(tp.treinos)&&tp.treinos.length){
     tp.treinos.slice(0,7).forEach((t,ti)=>{ let c=String(t.codigo||String.fromCharCode(65+ti)).replace(/[^A-Za-z0-9]/g,"").slice(0,3).toUpperCase()||String.fromCharCode(65+ti); if(TCODES.includes(c)) c=String.fromCharCode(65+ti);
-      TCODES.push(c); TR_NOME[c]=String(t.nome||("Treino "+c)).slice(0,50);
-      (Array.isArray(t.exercicios)?t.exercicios:[]).slice(0,25).forEach((e,ei)=>EXS.push([c,String(e.nome||"Exercício").slice(0,60),`${parseInt(e.series)||3} × ${String(e.reps||"—").slice(0,24)}`,ei<2?1:0,String(e.obs||"").slice(0,160),String(e.carga||"").slice(0,40),num(e.carga_kg),num(e.descanso_s)])); });
+      TCODES.push(c); TR_NOME[c]=String(t.nome||("Treino "+c)).slice(0,60); TR_NOTA[c]=String(t.nota||"").slice(0,300);
+      (Array.isArray(t.exercicios)?t.exercicios:[]).slice(0,25).forEach((e,ei)=>EXS.push([c,String(e.nome||"Exercício").slice(0,60),`${parseInt(e.series)||3} × ${String(e.reps||"—").slice(0,24)}`,ei<2?1:0,String(e.obs||"").slice(0,160),String(e.carga||"").slice(0,40),num(e.carga_kg),num(e.descanso_s),String(e.esforco||"").slice(0,30)])); });
     let used=false; tp.treinos.slice(0,7).forEach((t,ti)=>{ (Array.isArray(t.dias)?t.dias:[]).forEach(d=>{ const n=DAYMAP[na(d).slice(0,3)]; if(n!=null&&TRAIN_OF[n]==null){ TRAIN_OF[n]=TCODES[ti]; used=true; } }); });
     if(!used){ (DEFDAYS[Math.min(6,TCODES.length)]||[1,3,5]).forEach((d,i)=>TRAIN_OF[d]=TCODES[i%TCODES.length]); }
   }
@@ -966,10 +969,11 @@ function renderHoje(D){
   const dn=ses&&ses.t===tT?Object.values(ses.sets||{}).reduce((a,arr)=>a+arr.filter(Boolean).length,0):0;
   const fin=(ses&&ses.t===tT&&ses.done)||(S.diario[TK]||{}).treino;
   $("tdTrRing").innerHTML=ring(fin?1:tot?dn/tot:0,86,{stroke:9,color:"var(--ok)",label:tT});
+  $("tdTrL").dataset.n=trShort(tT);
   $("tdTrL").textContent=isTrainDay()?"Treino de hoje":"Próximo treino";
   $("tdTrV").textContent=isTrainDay()?(fin?"Concluído":`${dn} de ${tot} séries`):`${DOW[nt.d.getDay()]}`;
   $("tdTrS").textContent=TR_NOME[tT]||"";
-  $("tdTrBtn").textContent=isTrainDay()?(fin?"Ver treino":"Abrir treino"):"Ver treino "+tT; }
+  $("tdTrBtn").textContent=isTrainDay()?(fin?"Ver treino":"Abrir treino"):"Ver "+trShort(tT); }
   // semana
   const wDays=Math.min(7,Math.max(1,Math.round((today-START)/864e5)-(curWeek-1)*7+1));
   const wTre=treinosInWeek(curWeek); const wD=dailyInWeek(curWeek).length;
@@ -1064,14 +1068,15 @@ function renderTreino(){
   if(!TCODES.includes(trT)) trT=isTrainDay()?TRAIN_OF[today.getDay()]:nextTreino().t;
   const k=TK, sess=S.sessoes[k]&&S.sessoes[k].t===trT?S.sessoes[k]:{t:trT,sets:{}}, dayT=TRAIN_OF[today.getDay()], nt=nextTreino();
   const list=EXS.filter(e=>e[0]===trT);
-  $("trTitle").textContent=`Treino ${trT} · ${TR_NOME[trT]}`;
-  $("trSub").textContent=dayT?(dayT===trT?`Hoje, ${DOW[today.getDay()]} · ${list.length} exercícios`:`Hoje a ficha indica o Treino ${dayT}. Você está vendo o ${trT}.`):`Hoje não há treino na ficha. Próximo: Treino ${nt.t} na ${DOW[nt.d.getDay()]}.`;
-  $("segTr").innerHTML=TCODES.map(t=>`<button type="button" aria-pressed="${t===trT}" data-t="${t}">${dayLbl(t)} · ${t}</button>`).join("");
+  $("trTitle").textContent=TR_NOME[trT]||`Treino ${trT}`;
+  $("trSub").textContent=dayT?(dayT===trT?`Hoje, ${DOW[today.getDay()]} · ${list.length} exercícios`:`Hoje a ficha indica ${trShort(dayT)}. Você está vendo ${trShort(trT)}.`):`Hoje não há treino na ficha. Próximo: ${trShort(nt.t)} na ${DOW[nt.d.getDay()]}.`;
+  $("trNota").hidden=!TR_NOTA[trT]; $("trNota").textContent=TR_NOTA[trT]||"";
+  $("segTr").innerHTML=TCODES.map(t=>`<button type="button" aria-pressed="${t===trT}" data-t="${t}">${dayLbl(t)} · ${esc(trShort(t))}</button>`).join("");
   $("segTr").querySelectorAll("button").forEach(b=>b.onclick=()=>{trT=b.dataset.t;renderTreino();});
   let tot=0,done=0;
   $("trList").innerHTML=list.map(e=>{ const n=setsOf(e[2]); tot+=n; const stt=sess.sets[e[1]]||[]; done+=stt.filter(Boolean).length;
-    const ll=lastLoad(e[1]), cur=(S.cargas[e[1]]||{})[curWeek], unit=/\(s\)|segundo/i.test(e[1]+e[2])?"s":"kg", ph=e[6]!=null?e[6]:ll?ll[1]:null;
-    const meta=[esc(e[2]), e[5]?`carga ${esc(e[5])}`:"", e[7]?`descanso ${fmt(e[7],0)} s`:""].filter(Boolean).join(" · ");
+    const ll=lastLoad(e[1]), cur=(S.cargas[e[1]]||{})[curWeek], unit=/\(s\)|segundo|\d\s*s\b|\d\s*seg/i.test(e[1]+" "+e[2])?"s":"kg", ph=e[6]!=null?e[6]:ll?ll[1]:null;
+    const meta=[esc(e[2]), e[5]?`carga ${esc(e[5])}`:"", e[8]?esc(e[8]):"", e[7]?`descanso ${e[7]>=120&&e[7]%60===0?fmt(e[7]/60,0)+" min":fmt(e[7],0)+" s"}`:""].filter(Boolean).join(" · ");
     return `<div class="trx"><div><b>${esc(e[1])}</b>${isPR(e[1])?' <span class="chip good">recorde</span>':""}<div class="meta">${meta}</div>${e[4]?`<div class="meta">${esc(e[4])}</div>`:""}${ll?`<div class="meta">Última vez: ${fmt(ll[1])} ${unit} (semana ${ll[0]})</div>`:""}</div>
       <input inputmode="decimal" data-ex="${esc(e[1])}" value="${cur!=null?String(cur).replace(".",","):""}" placeholder="${ph!=null?fmt(ph,ph%1?1:0):unit}" aria-label="Carga usada em ${esc(e[1])} (${unit})">
       <div class="sets">${Array.from({length:n},(_,i)=>`<button type="button" class="set" data-ex="${esc(e[1])}" data-r="${e[7]||90}" data-i="${i}" aria-pressed="${!!stt[i]}" aria-label="Série ${i+1}">${i+1}</button>`).join("")}</div></div>`; }).join("");
@@ -1085,7 +1090,7 @@ function renderTreino(){
 }
 $("trDone").onclick=()=>{ const s=S.sessoes[TK]&&S.sessoes[TK].t===trT?S.sessoes[TK]:(S.sessoes[TK]={t:trT,sets:{}}); s.done=true;
   EXS.filter(e=>e[0]===trT).forEach(e=>{ const h=(S.cargas[e[1]]=S.cargas[e[1]]||{}); if(num(h[curWeek])!=null) return; const sets=(s.sets[e[1]]||[]).filter(Boolean).length; if(!sets) return; const ll=lastLoad(e[1]); const v=e[6]!=null?e[6]:ll?ll[1]:null; if(v!=null) h[curWeek]=v; });
-  S.diario[TK]=Object.assign({},S.diario[TK]||{},{treino:true}); save(); toast("Treino "+trT+" registrado"); renderAll(); };
+  S.diario[TK]=Object.assign({},S.diario[TK]||{},{treino:true}); save(); toast(trShort(trT)+" registrado"); renderAll(); };
 let restT=null,restLeft=90,restBase=90;
 function startRest(sec){ clearInterval(restT); restBase=sec||restBase||90; restLeft=restBase; tick(); restT=setInterval(()=>{ restLeft--; tick(); if(restLeft<=0){ clearInterval(restT); $("trTimer").textContent="Vai!"; try{ navigator.vibrate&&navigator.vibrate([200,100,200]); }catch(e){} } },1000); }
 function tick(){ $("trTimer").textContent=Math.floor(restLeft/60)+":"+String(restLeft%60).padStart(2,"0"); }
@@ -1186,7 +1191,7 @@ function renderCargas(){
   $("cgWk").textContent=cgW; $("cgFase").textContent=TCODES.length?"Carga usada em cada semana":"";
   if(!TCODES.length){ $("segTreino").innerHTML=""; $("exList").innerHTML=`<span class="sub">Importe a ficha do personal em Treino para registrar as cargas aqui.</span>`; return; }
   if(!TCODES.includes(cgT)) cgT=TCODES[0];
-  $("segTreino").innerHTML=TCODES.map(t=>`<button type="button" aria-pressed="${t===cgT}" data-t="${t}">${dayLbl(t)} · Treino ${t}</button>`).join("");
+  $("segTreino").innerHTML=TCODES.map(t=>`<button type="button" aria-pressed="${t===cgT}" data-t="${t}">${dayLbl(t)} · ${esc(trShort(t))}</button>`).join("");
   $("segTreino").querySelectorAll("button").forEach(b=>b.onclick=()=>{cgT=b.dataset.t;renderCargas();});
   $("exList").innerHTML=EXS.filter(e=>e[0]===cgT).map(e=>{ const h=S.cargas[e[1]]||{}, v=h[cgW]??""; let prev=null; for(let w=cgW-1;w>=1;w--) if(num(h[w])!=null){prev=[w,num(h[w])];break;}
     const vals=Array.from({length:12},(_,i)=>num(h[i+1]));
@@ -1357,9 +1362,9 @@ Regras: inclua todas as refeições na ordem do dia, com cada alimento e a quant
   return `Você vai ler uma ficha de treino de musculação passada por um personal trainer e organizá-la para um aplicativo. ${src}
 
 Responda somente com JSON neste formato:
-{"treinos":[{"codigo":"A","nome":"Peito e tríceps","dias":["seg","qui"],"exercicios":[{"nome":"Supino reto com barra","series":4,"reps":"8–10","carga":"20 kg de cada lado","carga_kg":60,"descanso_s":90,"obs":"cadência, método ou técnica, se houver"}]}],"dicas":["orientação curta"],"observacoes":"resumo geral em 1 frase ou null"}
+{"treinos":[{"codigo":"A","nome":"Peito e tríceps","dias":["seg","qui"],"nota":"aquecimento, duração e finalização deste treino, em até 2 frases, ou null","exercicios":[{"nome":"Supino reto com barra","series":4,"reps":"8–10","carga":"20 kg de cada lado","carga_kg":60,"descanso_s":90,"esforco":"2 RIR","obs":"cadência, método ou técnica, se houver"}]}],"dicas":["orientação curta"],"observacoes":"resumo geral em 1 frase ou null"}
 
-Regras: um item em "treinos" por divisão (A, B, C...), na ordem da ficha. "dias" só se a ficha indicar os dias da semana (use seg, ter, qua, qui, sex, sab, dom); senão, lista vazia. "series" é inteiro; "reps" é texto como na ficha (ex.: "12", "10–12", "12/10/8", "até a falha", "30 s"). "carga" é a carga indicada como está escrita na ficha; "carga_kg" é o número em kg só quando der para saber (a carga total do exercício), senão null. "descanso_s" em segundos, ou null. Métodos (drop-set, bi-set, rest-pause) vão em "obs". Aquecimento e cardio só se estiverem na ficha, como exercício. "dicas": até 10 orientações gerais do personal (aquecimento, progressão de carga, cardio, frequência). Não invente exercícios, cargas nem dicas.`;
+Regras: um item em "treinos" por divisão, na ordem da ficha; "codigo" é sempre uma letra (A, B, C, D...) na ordem em que aparecem, mesmo que a ficha use outros nomes; "nome" é o nome do treino na ficha com a ênfase (ex.: "Superior A · peito e costas"). "dias" só se a ficha indicar os dias da semana (use seg, ter, qua, qui, sex, sab, dom); senão, lista vazia. "series" é inteiro; "reps" é texto como na ficha (ex.: "12", "10–12", "12/10/8", "até a falha", "30 s"). "carga" é a carga indicada como está escrita na ficha; "carga_kg" é o número em kg só quando der para saber (a carga total do exercício), senão null; se a ficha não indicar carga, use "" e null. "descanso_s" em segundos (numa faixa como "2-3 min", use o menor valor), ou null. "esforco": RIR, RPE ou intensidade indicada, senão null. Métodos (drop-set, bi-set, rest-pause) vão em "obs". Aquecimento e cardio só se estiverem na ficha, como exercício. "dicas": até 12 orientações gerais do personal (regras de execução, progressão semana a semana, cuidados clínicos, cardio, checklist). Não invente exercícios, cargas nem dicas.`;
 }
 function aiErr(e){ const c=e&&e.code; const base=({no_credit:"A conta da API está sem crédito. Adicione crédito em console.anthropic.com (Billing).",bad_model:"O modelo configurado não existe. Em Mais › Consulta e ajustes, deixe o campo Modelo em branco.",not_granted:"A leitura com IA não foi autorizada neste app.",sampling_disabled:"A leitura com IA não está disponível para esta conta.",images_unavailable:"Leitura de fotos indisponível aqui. Tente um PDF com texto.",scan_no_images:"Este PDF é uma imagem escaneada e a leitura de imagens não está disponível aqui.",image_rejected:"A imagem não pôde ser lida. Tente outra foto, mais nítida.",invalid_json:"Não consegui organizar a leitura. Tente de novo.",rate_limited:"Muitas leituras seguidas. Tente de novo em alguns minutos.",cancelled:"Leitura cancelada.",refused:"Não foi possível ler este arquivo.",pdf_load:"Não consegui abrir o leitor de PDF. Verifique a conexão e tente de novo.",empty:"O arquivo parece vazio.",no_key:"Configure a chave da leitura automática em Mais › Consulta.",bad_key:"Chave da API inválida ou sem crédito. Confira em Mais › Consulta.",offline:"Sem internet. A leitura automática precisa de conexão.",prompt_too_large:"Arquivo grande demais para ler de uma vez. Envie só as páginas principais."})[c]||"Não foi possível ler agora. Tente de novo."; return e&&e.detail&&!["no_credit","bad_model"].includes(c)?base+" (detalhe: "+String(e.detail).slice(0,160)+")":base; }
 /* ---- barra de status da leitura (sempre visível) ---- */
@@ -1494,8 +1499,8 @@ function showReview(sec,data,fname,msgEl){
     ${arr(data.dicas).length?`<p class="sub">${arr(data.dicas).length} dica(s) do personal.</p>`:""}
     <p class="foot">Estas fichas passaram a valer. A anterior fica guardada, e o histórico de cargas continua pelo nome de cada exercício.</p>`;
   openReview("Treino lido do arquivo",html,()=>{ if(S.treinoPlan) S.treinoHist=(S.treinoHist||[]).concat([S.treinoPlan]).slice(-5);
-    S.treinoPlan={treinos:T.slice(0,7).map(t=>({codigo:t.codigo,nome:String(t.nome||"").slice(0,50),dias:arr(t.dias),exercicios:t.exercicios.slice(0,25).map(e=>({nome:String(e.nome||"").slice(0,60),series:parseInt(e.series)||null,reps:String(e.reps||"").slice(0,24),carga:e.carga?String(e.carga).slice(0,40):"",carga_kg:num(e.carga_kg),descanso_s:num(e.descanso_s),obs:e.obs?String(e.obs).slice(0,160):""}))})),
-      dicas:arr(data.dicas).slice(0,10).map(s=>String(s).slice(0,200)),observacoes:data.observacoes?String(data.observacoes).slice(0,300):"",fonte:fname,d:TK};
+    S.treinoPlan={treinos:T.slice(0,7).map(t=>({codigo:t.codigo,nome:String(t.nome||"").slice(0,60),nota:t.nota?String(t.nota).slice(0,300):"",dias:arr(t.dias),exercicios:t.exercicios.slice(0,25).map(e=>({nome:String(e.nome||"").slice(0,60),series:parseInt(e.series)||null,reps:String(e.reps||"").slice(0,24),carga:e.carga?String(e.carga).slice(0,40):"",carga_kg:num(e.carga_kg),descanso_s:num(e.descanso_s),esforco:e.esforco?String(e.esforco).slice(0,30):"",obs:e.obs?String(e.obs).slice(0,160):""}))})),
+      dicas:arr(data.dicas).slice(0,12).map(s=>String(s).slice(0,240)),observacoes:data.observacoes?String(data.observacoes).slice(0,300):"",fonte:fname,d:TK};
     trT=null; applyPlans(); save(); toast("Ficha importada"); go("treino"); aiBar("ok",`Ficha lida: ${T.length} treino(s) e ${T.reduce((a,t)=>a+t.exercicios.length,0)} exercícios.`); });
 }
 
@@ -1598,7 +1603,7 @@ function nextDate(dow,hh){ const [h,mi]=hh.split(":").map(Number); const now=new
 function lmEvents(){ const c=lmCfg(), E=[];
   if(c.peso) E.push({uid:"peso",t:"Pesar em jejum (Rumo 90)",d:"Registre o peso em Hoje.",s:nextDate(null,c.pesoH),min:10,rr:"FREQ=DAILY"});
   if(c.treino&&TCODES.length) TCODES.forEach(code=>{ const days=Object.keys(TRAIN_OF).filter(k=>TRAIN_OF[k]===code).map(Number); if(!days.length) return; const first=days.map(dw=>nextDate(dw,c.treinoH)).sort((a,b)=>a-b)[0];
-    E.push({uid:"treino-"+code,t:`Treino ${code} · ${TR_NOME[code]}`,d:"Abra o Treino no Rumo 90 para marcar as séries.",s:first,min:60,rr:"FREQ=WEEKLY;BYDAY="+days.map(x=>BYD[x]).join(",")}); });
+    E.push({uid:"treino-"+code,t:`${TR_NOME[code]||"Treino "+code}`,d:"Abra o Treino no Rumo 90 para marcar as séries.",s:first,min:60,rr:"FREQ=WEEKLY;BYDAY="+days.map(x=>BYD[x]).join(",")}); });
   if(c.refeicoes&&MEALS.length) MEALS.filter(m=>m.h).forEach(m=>{ const hh=String(Math.floor(m.hr)).padStart(2,"0")+":"+String(Math.round((m.hr%1)*60)).padStart(2,"0");
     E.push({uid:"ref-"+m.k,t:m.n+" (Rumo 90)",d:m.d,s:nextDate(null,hh),min:15,rr:"FREQ=DAILY"}); });
   if(c.resumo) E.push({uid:"resumo",t:"Resumo da semana (Rumo 90)",d:"No Painel, toque em Como foi minha semana.",s:nextDate(0,"19:00"),min:10,rr:"FREQ=WEEKLY;BYDAY=SU"});
