@@ -1,6 +1,6 @@
 /* Rumo aos 90 kg — funcionamento offline */
-const V="rumo90-v5", EXT="rumo90-ext";
-const SHELL=["./","./index.html","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png","./icons/apple-touch-icon.png"];
+const V="rumo90-v6", EXT="rumo90-ext";
+const SHELL=["./","./index.html","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png","./icons/apple-touch-icon.png","./vendor/pdf.min.mjs","./vendor/pdf.worker.min.mjs"];
 self.addEventListener("install",e=>{ e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())); });
 self.addEventListener("activate",e=>{ e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V&&k!==EXT).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });
 function blob(id){ return new Promise((r,j)=>{ const q=indexedDB.open("rumo90",1);

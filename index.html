@@ -1050,7 +1050,7 @@ const IMPTXT={treino:{t:"Importe a ficha do personal",p:"Envie o PDF, a foto ou 
 function needKey(){ if(!window.__PWA) return false; try{ return !JSON.parse(localStorage.getItem("rumo90-ai")||"{}").key; }catch(e){ return true; } }
 function impCard(sec){ const x=IMPTXT[sec], el=$(sec==="treino"?"trEmpty":"cmEmpty");
   el.innerHTML=`<div class="ic">${ICON_IMP}</div><h2>${x.t}</h2><p>${x.p}</p>
-    ${needKey()?`<p class="warnline">Antes, configure a chave da leitura automática. <button type="button" class="linkbtn" data-go="consulta">Abrir configuração</button></p>`:""}
+    ${window.__PWA&&!hasKey()?`<p class="sub" style="font-size:.82rem">Leitura grátis no próprio celular, para PDF com texto (o formato normal das fichas e dietas).</p>`:""}
     <div class="row" style="justify-content:center"><label class="btn" for="imp_${sec}">${x.b}</label><input type="file" id="imp_${sec}" accept="image/*,application/pdf,.pdf,.txt" hidden><button type="button" class="btn ghost small" id="imps_${sec}" hidden>Cancelar</button></div>
     <span class="sub" id="impm_${sec}"></span>`;
   bindImp(sec); }
@@ -1068,8 +1068,8 @@ function renderTreino(){
   if(!TCODES.includes(trT)) trT=isTrainDay()?TRAIN_OF[today.getDay()]:nextTreino().t;
   const k=TK, sess=S.sessoes[k]&&S.sessoes[k].t===trT?S.sessoes[k]:{t:trT,sets:{}}, dayT=TRAIN_OF[today.getDay()], nt=nextTreino();
   const list=EXS.filter(e=>e[0]===trT);
-  $("trTitle").textContent=TR_NOME[trT]||`Treino ${trT}`;
-  $("trSub").textContent=dayT?(dayT===trT?`Hoje, ${DOW[today.getDay()]} · ${list.length} exercícios`:`Hoje a ficha indica ${trShort(dayT)}. Você está vendo ${trShort(trT)}.`):`Hoje não há treino na ficha. Próximo: ${trShort(nt.t)} na ${DOW[nt.d.getDay()]}.`;
+  $("trTitle").textContent=trShort(trT); const enf=String(TR_NOME[trT]||"").split("·").slice(1).join("·").trim();
+  $("trSub").textContent=(enf?enf.charAt(0).toUpperCase()+enf.slice(1)+" — ":"")+(dayT?(dayT===trT?`hoje, ${DOW[today.getDay()]}, ${list.length} exercícios`:`hoje a ficha indica ${trShort(dayT)}.`):`hoje não há treino na ficha. Próximo: ${trShort(nt.t)} na ${DOW[nt.d.getDay()]}.`);
   $("trNota").hidden=!TR_NOTA[trT]; $("trNota").textContent=TR_NOTA[trT]||"";
   $("segTr").innerHTML=TCODES.map(t=>`<button type="button" aria-pressed="${t===trT}" data-t="${t}">${dayLbl(t)} · ${esc(trShort(t))}</button>`).join("");
   $("segTr").querySelectorAll("button").forEach(b=>b.onclick=()=>{trT=b.dataset.t;renderTreino();});
@@ -1263,6 +1263,204 @@ $("phFile").addEventListener("change",async e=>{ const f=e.target.files&&e.targe
     const D=derive(); S.fotos=S.fotos||[]; S.fotos.push({id:r.id,d:TK,p:Math.round(D.last*10)/10}); save(); $("phMsg").textContent=""; toast("Foto adicionada"); renderFotos(); }
   catch(err){ const c=err&&err.code; $("phMsg").textContent=c==="too_large"?"Foto grande demais; tente outra.":c==="unsupported_type"?"Formato não aceito; use JPG ou PNG.":c==="quota_or_state"?"Espaço de fotos cheio; apague alguma antes.":"Não foi possível enviar agora. Tente de novo."; } });
 
+/* Rumo 90 — leitor local de PDF (sem IA). Recebe os itens de texto do pdf.js e monta treino ou dieta. */
+(function(root){
+const na=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const clean=s=>String(s||"").replace(/\s+/g," ").trim();
+
+/* ---------- linhas e células a partir do pdf.js ---------- */
+function buildLines(pages){ // pages: [{items:[{str,transform,width}]}]
+  const out=[];
+  pages.forEach((pg,pi)=>{
+    const its=pg.items.filter(i=>i.str&&i.str.trim()).map(i=>({s:i.str,x:i.transform[4],y:i.transform[5],w:i.width||0,h:Math.abs(i.transform[3])||10}));
+    its.sort((a,b)=>b.y-a.y||a.x-b.x);
+    const rows=[];
+    its.forEach(it=>{ const r=rows.find(r=>Math.abs(r.y-it.y)<=Math.max(2,it.h*.35)); if(r) r.items.push(it); else rows.push({y:it.y,items:[it]}); });
+    rows.sort((a,b)=>b.y-a.y);
+    rows.forEach(r=>{ r.items.sort((a,b)=>a.x-b.x); const cells=[]; let cur=null;
+      r.items.forEach(it=>{ const gap=cur?it.x-(cur.x1):999; if(cur&&gap<Math.max(6,it.h*.9)){ cur.t+=(gap>it.h*.15&&!/\s$/.test(cur.t)&&!/^\s/.test(it.s)?" ":"")+it.s; cur.x1=it.x+it.w; } else { cur={t:it.s,x:it.x,x1:it.x+it.w}; cells.push(cur); } });
+      const cs=cells.map(c=>({t:clean(c.t),x:c.x})).filter(c=>c.t);
+      if(cs.length) out.push({p:pi,y:r.y,cells:cs,text:cs.map(c=>c.t).join("  ")}); });
+  });
+  return out;
+}
+
+/* ---------- treino ---------- */
+const tc=s=>s.replace(/^([^·]+)/,m=>m===m.toUpperCase()&&/[A-Z]{3}/.test(m)?m.toLowerCase().replace(/(^|\s)(\S)/g,(a,b,c)=>b+c.toUpperCase()).replace(/\b(A|B|C|D|E)\b/gi,x=>x.toUpperCase()):m);
+const DAYS=[["seg","segunda"],["ter","terca"],["qua","quarta"],["qui","quinta"],["sex","sexta"],["sab","sabado"],["dom","domingo"]];
+const isBlank=t=>/^[_\s.\-]+$/.test(t)||/_{3,}/.test(t);
+const repsRe=/^(\d{1,3}(\s*[-–a\/]\s*\d{1,3})*(\s*(s|seg|segundos|min|reps?|rep|\/lado|cada lado|por lado|x))?(\s*\/\s*lado)?|ate a falha|falha|amrap|max(imo)?)$/i;
+function dayOf(t){ const n=na(t); for(const [k,full] of DAYS){ if(new RegExp("^\\W*"+full+"(-feira)?\\b").test(n)||new RegExp("^\\W*"+k+"\\b").test(n)) return k; } return null; }
+function headerInfo(text){ // retorna {dias,nome} se a linha for título de treino
+  const n=na(text), t=clean(text);
+  if(/^(exercicio|registro|semana|data|duracao|observa|finaliza|aquecimento|enfase)/.test(n)) return null;
+  const d=dayOf(t);
+  const m=t.match(/^\W*(treino|ficha|dia|sessao|sessão|rotina)\s*([A-Za-z]|\d{1,2})\b\s*[:\-–|·]?\s*(.*)$/i);
+  if(d){ const rest=clean(t.replace(/^\W*\S+(-feira)?/i,"").replace(/^[\s:\-–|·/e]+/,"")); const dias=[d];
+    const more=rest.match(/^(?:e|,|\/)\s*(\S+)/i); if(more){ const d2=dayOf(more[1]); if(d2) dias.push(d2); }
+    if(t.length>70) return null; return {dias,nome:rest.replace(/^(e|,|\/)\s*\S+\s*[|:\-–]?\s*/i,(x)=>more&&dayOf(more[1])?"":x)||"Treino"}; }
+  if(m&&t.length<90){ const dias=[]; DAYS.forEach(([k,full])=>{ if(new RegExp("\\b"+full+"(-feira)?\\b").test(n)) dias.push(k); }); const nome=clean(m[3].replace(/\(?\s*(segunda|terça|terca|quarta|quinta|sexta|sábado|sabado|domingo)(-feira)?(\s*(e|,|\/)\s*(segunda|terça|terca|quarta|quinta|sexta|sábado|sabado|domingo)(-feira)?)*\s*\)?/gi,"").replace(/[\s\-–|·]+$/,"")); return {dias,nome:nome||("Treino "+m[2].toUpperCase()),cod:m[2].toUpperCase()}; }
+  return null; }
+function parseRow(cells){ // tenta interpretar uma linha como exercício
+  let name=[],series=null,reps=null,pausa=null,esf=null,carga=null,obs=[];
+  const t=cells.map(c=>c.t);
+  // formato em linha: "Supino reto 4x10-12 60s"
+  if(t.length===1){ const m=t[0].match(/^(.*?[A-Za-zÀ-ú)].*?)[\s:\-–]+(\d{1,2})\s*[x×X]\s*([\d\-–\/]+(?:\s*(?:s|seg|reps?))?)(.*)$/);
+    if(!m) return null; name=[m[1]]; series=+m[2]; reps=clean(m[3]); const rest=m[4]; const pm=rest.match(/(\d+\s*(?:[-–a]\s*\d+)?\s*(?:s|seg|segundos|min|minutos))\b/i); if(pm) pausa=pm[1];
+    const km=rest.match(/(\d+(?:[.,]\d+)?)\s*kg/i); if(km) carga=km[0]; const em=rest.match(/(\d(?:\s*-\s*\d)?\s*RIR|RPE\s*\d+(?:[.,]\d)?)/i); if(em) esf=em[1];
+    const ob=clean(rest.replace(pm?pm[0]:"","").replace(km?km[0]:"","").replace(em?em[0]:"","").replace(/^[\s\-–:|·,]+/,"")); if(ob) obs.push(ob);
+    return {name:clean(name.join(" ")).replace(/^\d{1,2}[.)\-–]\s*/,""),series,reps,pausa,esf,carga,obs:obs.join(" ").replace(/^\((.*)\)$/,"$1")}; }
+  let i=0;
+  while(i<t.length&&!/^\d{1,2}$/.test(t[i])&&!/^\d{1,2}\s*[x×X]\s*\S/.test(t[i])){ name.push(t[i]); i++; }
+  if(i>=t.length) return null;
+  const sx=t[i].match(/^(\d{1,2})\s*[x×X]\s*(.+)$/);
+  if(sx){ series=+sx[1]; reps=clean(sx[2]); i++; } else { series=+t[i]; i++; if(i<t.length&&(repsRe.test(na(t[i]))||/^\d/.test(t[i]))){ reps=t[i]; i++; } }
+  if(!(series>=1&&series<=12)||!reps) return null;
+  for(;i<t.length;i++){ const c=t[i], n=na(c);
+    if(/rir|rpe|controle|moderad|leve|intens|falha/.test(n)) esf=esf?esf+" "+c:c;
+    else if(/kg|lb|placa|carga/.test(n)) carga=c;
+    else if(/^\d+\s*([-–a]\s*\d+)?\s*(s|seg|segundos|min|minutos|")\b/.test(n)||/^\d+['"]/.test(n)) pausa=c;
+    else obs.push(c); }
+  return {name:clean(name.join(" ")).replace(/^\d{1,2}[.)\-–]\s*/,""),series,reps,pausa,esf,carga,obs:obs.join(" ")}; }
+const toSec=p=>{ if(!p) return null; const n=na(p); const m=n.match(/(\d+)/); if(!m) return null; const v=+m[1]; return /min|'/.test(n)&&!/seg|s\b/.test(n.replace(/min/,""))?v*60:/min/.test(n)?v*60:v; };
+const kgOf=c=>{ const m=String(c||"").match(/(\d+(?:[.,]\d+)?)\s*kg/i); return m?+m[1].replace(",","."):null; };
+function parseTreino(lines){
+  const treinos=[], dicas=[]; let cur=null, inTable=false, pend=[], lastRow=null, notaMode=null, para=null;
+  const pushDica=s=>{ s=clean(s.replace(/^[•\-–*·▪►]\s*/,"").replace(/^\[\s*\]\s*/,"Checklist: ")); if(s.length<12||isBlank(s)||/^ficha de treino|^pagina|^\d+$/.test(na(s))) return;
+    if(s.split(" ").length<=4&&!/[.;:!?]/.test(s)) return;
+    const wk=s.match(/^(\d{1,2}(?:\s*-\s*\d{1,2})?)\s+([A-ZÀ-Ú].*)$/); if(wk) s=`Semana${/-/.test(wk[1])?"s":""} ${wk[1].replace(/\s/g,"")}: ${wk[2]}`;
+    if(dicas.length<20&&!dicas.includes(s)) dicas.push(s); };
+  const flushPara=()=>{ if(para){ pushDica(para); para=null; } };
+  const dicaLine=(L,t,n)=>{
+    if(L.cells.length>=3&&!/^\d+(\s*-\s*\d+)?$/.test(L.cells[0].t)){ flushPara(); return; }
+    if(/^\W*(segunda|terca|quarta|quinta|sexta|sabado|domingo)\s*:/.test(n.replace(/^[•\-–*·▪►]\s*/,""))&&/—|–| - /.test(t)&&!/recupera|descanso|caminhada|livre/.test(n)){ flushPara(); return; }
+    if(/^[•\-–*·▪►]/.test(t)){ flushPara(); para=t; }
+    else if(/^\[\s*\]/.test(t)){ flushPara(); pushDica(t.replace(/^\[\s*\]\s*/,"")); }
+    else if(para&&(/^[a-zà-ú(]/.test(t)||!/[.!?;]$/.test(para))&&t.length>2&&!/^(divisao|regras|progressao|plano|checklist|adaptacao)/.test(n)) para+=" "+t;
+    else if(L.cells.length>=2&&/^\d+(\s*-\s*\d+)?$/.test(L.cells[0].t)){ flushPara(); pushDica(`Semana${/-/.test(L.cells[0].t)?"s":""} ${L.cells[0].t}: ${L.cells.slice(1).map(c=>c.t).join(" · ")}`); }
+    else { flushPara(); if(t.length>40) para=t; }
+  };
+  for(let li=0;li<lines.length;li++){ const L=lines[li], t=L.text, n=na(t);
+    if(isBlank(t)||/^ficha de treino \|/.test(n)||/^\d+$/.test(t)) continue;
+    const h=headerInfo(t);
+    if(h&&!(h.dias.length&&/^\W*(segunda|terca|quarta|quinta|sexta|sabado|domingo)\W*:/.test(n)&&!cur&&!lines.slice(li+1,li+8).some(x=>/exercicio/.test(na(x.text))||parseRow(x.cells)))){
+      flushPara(); cur={codigo:h.cod||null,nome:h.nome,dias:h.dias,nota:[],exercicios:[]}; treinos.push(cur); inTable=false; lastRow=null; pend=[]; notaMode=null; continue; }
+    if(cur){
+      if(/^enfase\b/.test(n)){ const e=t.replace(/^\S+\s*:?\s*/,""); const parts=e.split("|").map(clean); cur.nome=cur.nome+" · "+parts[0].replace(/^(peito|costas|pernas)/i,x=>x); if(parts[1]) cur.nota.push(parts[1]); continue; }
+      if(/^aquecimento\b/.test(n)){ cur.nota.push(t); notaMode="nota"; continue; }
+      if(/^exercicio\b/.test(n)||(/\bexercicio\b/.test(n)&&/\breps?\b|\bseries?\b|repeticoes/.test(n))){ inTable=true; notaMode=null; continue; }
+      if(/^(series?|s|reps|pausa|esforco|descanso|carga)$/.test(n)) continue;
+      if(/^(finalizacao|registro rapido|registro)\b/.test(n)){ inTable=false; notaMode=/^finaliz/.test(n)?"fin":null; const rest=t.replace(/^\S+\s*:?\s*/,""); if(notaMode==="fin"&&rest&&!/^finaliza/i.test(rest)) cur.nota.push(rest); continue; }
+      const row=parseRow(L.cells);
+      if(row){ if(!row.name){ row.name=pend.join(" "); pend=[]; row._needTail=true; } else if(pend.length&&lastRow==null){ pend=[]; }
+        const ex={nome:row.name,series:row.series,reps:row.reps,carga:row.carga||"",carga_kg:kgOf(row.carga),descanso_s:toSec(row.pausa),esforco:row.esf||"",obs:row.obs||""};
+        if(ex.nome){ cur.exercicios.push(ex); lastRow={ex,need:!!row._needTail}; inTable=true; notaMode=null; } continue; }
+      if((notaMode==="fin"||notaMode==="nota")&&!(L.cells.length===1&&t===t.toUpperCase()&&/[A-Z]{4}/.test(t))){ if(cur.nota.join(" ").length<400) cur.nota.push(t); continue; }
+      if(inTable&&L.cells.length===1&&t.length<60&&!/[.:]$/.test(t)){
+        if(lastRow&&(lastRow.need||/^[a-zà-ú(]/.test(t))){ lastRow.ex.nome=clean(lastRow.ex.nome+" "+t); lastRow.need=false; }
+        else pend.push(t);
+        continue; }
+      if(cur.exercicios.length===0&&!inTable){ cur.nota.push(t); continue; }
+      inTable=false; notaMode=null; dicaLine(L,t,n); continue; }
+    dicaLine(L,t,n);
+  }
+  flushPara();
+  const T=treinos.filter(t=>t.exercicios.length).map((t,i)=>({codigo:String.fromCharCode(65+i),nome:tc(clean(t.nome)).slice(0,60),dias:t.dias,nota:clean(t.nota.reduce((a,x)=>!a?x:(/[.!?:;]$/.test(a)||!/^[a-zà-ú(]/.test(x)?(/[.!?:;]$/.test(a)?a:a+".")+" "+x:a+" "+x),"")).slice(0,300),exercicios:t.exercicios}));
+  return {treinos:T,dicas:dicas.slice(0,20),observacoes:null};
+}
+
+/* ---------- dieta ---------- */
+const MEALRE=/\b(cafe da manha|desjejum|colacao|lanche da manha|lanche da tarde|lanche da noite|lanche|almoco|jantar|janta|ceia|pre[- ]?treino|pos[- ]?treino)\b/;
+const MEALRE2=/\b(refeicao\s*\d+|\d+\s*a?\s*refeicao)\b/;
+const TIMERE=/\b(\d{1,2})\s*(?:[:h]\s*(\d{2})|h)\b/i;
+function mealHeader(t){ const n=na(t); const m=n.match(MEALRE)||n.match(MEALRE2); if(!m) return null; if(t.length>70) return null;
+  if(/^(substitu|ou\b|opcao|trocar|obs)/.test(n)) return null;
+  const tm=t.match(TIMERE); const idx=n.indexOf(m[1]);
+  let nome=clean(t.substr(idx,m[1].length)); nome=nome.charAt(0).toUpperCase()+nome.slice(1);
+  return {nome,horario:tm?`${tm[1].padStart(2,"0")}:${tm[2]||"00"}`:""}; }
+const QRE=/^((\d+(?:[.,]\d+)?|\d+\/\d+|meia|meio|uma?|duas|dois|tres|três)\s*(g|gr|gramas?|kg|ml|l|litros?|unidades?|un|und|fatias?|colher(?:es)?(?:\s+de\s+(?:sopa|chá|cha|sobremesa))?|cs|cc|xícaras?|xicaras?|copos?|conchas?|porç(?:ão|ões)|porcao|scoops?|medidas?|pedaços?|pedacos?|filés?|files?|potes?|pegadores?|escumadeiras?)?\.?)\s*(?:\(([^)]*)\))?\s*(?:de\s+)?(.+)$/i;
+const FOOD=[ // [regex, g de proteína por 100 g, peso padrão de 1 unidade/porção em g]
+ [/whey/,80,30],[/clara/,11,33],[/\bovos?\b/,13,50],[/frango|peito de frango|sobrecoxa/,31,120],[/patinho|carne|bife|alcatra|file mignon|maminha|musculo|acem|lagarto/,30,120],
+ [/tilapia|peixe|merluza|salmao|pescada|saint peter/,24,120],[/atum/,25,60],[/sardinha/,24,80],[/camarao/,24,100],[/peito de peru|peru/,20,20],[/presunto/,15,20],
+ [/iogurte.*(proteico|protein|grego|skyr)/,9,160],[/iogurte/,4,170],[/leite/,3.3,200],[/queijo branco|minas|cottage|ricota/,15,30],[/mussarela|muçarela|queijo/,24,20],[/requeijao/,9,15],
+ [/tofu/,10,100],[/lentilha/,9,100],[/grao de bico/,9,100],[/feijao/,5,100],[/ervilha/,6,80],[/edamame/,11,100],
+ [/aveia/,14,30],[/pao integral|pao de forma/,10,25],[/pao frances|pao/,8,50],[/tapioca/,0,30],[/arroz/,2.5,100],[/macarrao|massa/,5,100],[/batata|mandioca|aipim|inhame|cara/,1.8,100],
+ [/castanha|amendoim|nozes|amendoa/,20,15],[/pasta de amendoim/,25,15],[/chia|linhaca/,17,10]];
+const UNITG={colher:15,"colher de sopa":15,"colher de cha":5,"colher de sobremesa":10,cs:15,cc:5,xicara:120,copo:200,concha:100,porcao:100,scoop:30,medida:30,fatia:25,pegador:80,escumadeira:90,pote:170,file:120,pedaco:60};
+function grams(qtxt,paren,food){ const pm=String(paren||"").match(/(\d+(?:[.,]\d+)?)\s*(g|ml)/i); if(pm) return +pm[1].replace(",",".");
+  const n=na(qtxt), m=n.match(/^(\d+(?:[.,]\d+)?|\d+\/\d+|meia|meio|uma?|duas|dois|tres)\s*(.*)$/); if(!m) return null;
+  let q=m[1]; q=q==="meia"||q==="meio"?.5:q==="um"||q==="uma"?1:q==="dois"||q==="duas"?2:q==="tres"?3:q.includes("/")?(+q.split("/")[0]/+q.split("/")[1]):+q.replace(",",".");
+  const u=clean(m[2]).replace(/\.$/,"");
+  if(/^(g|gr|gramas?|ml)$/.test(u)) return q; if(/^(kg|l|litros?)$/.test(u)) return q*1000;
+  for(const k of Object.keys(UNITG).sort((a,b)=>b.length-a.length)) if(u.startsWith(k)) return q*UNITG[k];
+  if(!u||/^(unidades?|un|und|ovos?|bananas?)$/.test(u)) return food?q*food[2]:null; return null; }
+function estProt(alimento,quant,paren){ const n=na(alimento+" "+(quant||"")); const f=FOOD.find(f=>f[0].test(n)); if(!f) return 0; const g=grams(quant||"1",paren,f); if(g==null) return Math.round(f[1]*f[2]/100); return Math.round(f[1]*g/100*10)/10; }
+function fixItem(o){ if(!o) return o; let a=o.alimento, q=o.quantidade||"", kcal=null;
+  const pm=a.match(/\s*\(([^)]*\d[^)]*)\)\s*$/); if(pm&&/\d\s*(g|ml)/i.test(pm[1])){ a=a.slice(0,pm.index); q=clean(q+" ("+pm[1]+")"); }
+  const km=q.match(/^(.*\S)\s+(\d{2,4})$/); if(km&&/[a-z)]/i.test(km[1])){ q=km[1]; kcal=+km[2]; }
+  if(/a vontade|a gosto|livre/.test(na(a+" "+q))){ a=clean(a.replace(/\s*(à|a) vontade|\s*a gosto/i,"")); q=q&&!/^\d+$/.test(q)?q:"à vontade"; }
+  return {alimento:clean(a),quantidade:clean(q),kcal}; }
+function parseItem(t,cells){
+  if(cells&&cells.length>=2&&!/^\d/.test(cells[0].t)&&(/\d/.test(cells[1].t)||/vontade|gosto|livre/i.test(cells[1].t))){ const last=cells[cells.length-1].t; const o=fixItem({alimento:cells[0].t,quantidade:cells[1].t}); if(cells.length>=3&&/^\d{1,4}$/.test(last)) o.kcal=+last; return o; }
+  let s=clean(t.replace(/^[•\-–*·▪►]\s*/,""));
+  if(/vontade|a gosto/i.test(s)&&!/^\d/.test(s)) return fixItem({alimento:s,quantidade:"à vontade"});
+  let m=s.match(QRE); if(m&&m[5]&&!/^\d/.test(m[5])) return fixItem({alimento:m[5],quantidade:m[1]+(m[4]?` (${m[4]})`:"")});
+  m=s.match(/^(.*?[A-Za-zÀ-ú].*?)\s*[\-–:]+\s*(\d.*?)$/); if(m) return fixItem({alimento:m[1],quantidade:m[2]});
+  m=s.match(/^(.*?)\s+(\d+(?:[.,]\d+)?\s*(?:g|ml|unidades?|un|fatias?|colheres?(?: de (?:sopa|chá|cha))?|xícaras?|xicaras?|conchas?|scoops?)(?:\s*\([^)]*\))?)$/i); if(m) return fixItem({alimento:m[1],quantidade:m[2]});
+  if(s.length>=3&&s.length<=80&&/[a-zà-ú]/i.test(s)) return fixItem({alimento:s,quantidade:""});
+  return null; }
+function parseDieta(lines){
+  const ref=[], dicas=[]; let cur=null, mode=null, kcal=null, prot=null, agua=null;
+  const pushDica=s=>{ s=clean(s.replace(/^[•\-–*·▪►]\s*/,"")); if(s.length>=10&&dicas.length<12&&!dicas.includes(s)) dicas.push(s); };
+  for(const L of lines){ const t=L.text, n=na(t);
+    if(isBlank(t)||/^\d+$/.test(t)||/^pagina \d/.test(n)) continue;
+    const km=n.match(/(?:total|valor energetico|calorias|vet)[^0-9]{0,30}(\d[\d.]{2,5})\s*kcal/)||(!ref.length&&n.match(/(\d[\d.]{2,5})\s*kcal\s*(?:\/|por)\s*dia/)); if(km) kcal=+km[1].replace(".","");
+    const pm=n.match(/proteinas?(?: total| diaria)?[^0-9]{0,20}(\d{2,3})\s*g/); if(pm&&(/total|diaria|dia\b|meta/.test(n)||!ref.length)) prot=+pm[1];
+    const am=n.match(/agua[^0-9]{0,25}(\d+(?:[.,]\d+)?\s*(?:l|litros|ml))\b/)||n.match(/(\d+(?:[.,]\d+)?\s*(?:l|litros))\s+de\s+agua/); if(am){ agua=am[1].replace(".",","); }
+    const h=mealHeader(t);
+    if(h&&(L.cells.length<=3)&&!/^[•\-–*]/.test(t)){ cur={nome:h.nome,horario:h.horario,itens:[],substituicoes:[],proteina_g:null,kcal:null}; ref.push(cur); mode="itens"; continue; }
+    if(/^(orientac|observac|recomendac|dicas|importante|lembre|suplementa)/.test(n)){ mode="dicas"; cur=null; const r=t.replace(/^[^:]*:\s*/,""); if(r!==t) pushDica(r); continue; }
+    if(!cur){ if(mode==="dicas"||/^[•\-–*]/.test(t)) pushDica(t); continue; }
+    if(/^(substitu|opc(ao|oes)|trocas?|pode trocar|ou\b|alternativ)/.test(n)){ cur.substituicoes.push(clean(t.replace(/^(substitui[cç](ão|ões|ao|oes)|op[cç](ão|ões|ao|oes)|trocas?|alternativas?)\s*:?\s*/i,""))); mode="subs"; continue; }
+    const mp=n.match(/(?:ptn|proteinas?)\s*:?\s*(\d{1,3}(?:[.,]\d)?)\s*g/); const mk=n.match(/(\d{2,4})\s*kcal/);
+    if((mp||mk)&&t.length<60&&!/[a-z]{4,}.*\d+\s*(g|un)\b.*(ptn|prote)/.test(n.replace(/(ptn|proteinas?)\s*:?\s*\d.*$/,""))){ if(mp) cur.proteina_g=+mp[1].replace(",","."); if(mk) cur.kcal=+mk[1]; continue; }
+    if(/^(alimento|quantidade|medida caseira|item)\b/.test(n)) continue;
+    if(mode==="subs"&&/^[•\-–*]|^ou\b/.test(n)){ cur.substituicoes.push(clean(t.replace(/^[•\-–*]\s*|^ou\s+/i,""))); continue; }
+    const it=parseItem(t,L.cells); if(it&&cur.itens.length<20){ cur.itens.push(it); mode="itens"; }
+  }
+  const R=ref.filter(r=>r.itens.length||r.substituicoes.length).map(r=>{ let est=false;
+    if(r.proteina_g==null){ const s=r.itens.reduce((a,i)=>{ const pm=String(i.quantidade).match(/\(([^)]*)\)/); return a+estProt(i.alimento,i.quantidade.replace(/\(.*\)/,""),pm&&pm[1]); },0); r.proteina_g=Math.round(s); est=true; }
+    const ik=r.itens.reduce((a,i)=>a+(i.kcal||0),0); return {nome:r.nome,horario:r.horario,itens:r.itens.map(i=>({alimento:i.alimento,quantidade:i.quantidade})),substituicoes:r.substituicoes.slice(0,8),proteina_g:r.proteina_g,kcal:r.kcal||(ik||null),proteina_estimada:est}; });
+  return {kcal_total:kcal,proteina_total_g:prot,agua:agua?agua.replace(/\s*l(itros)?$/i," L"):null,refeicoes:R,cardapio_semanal:[],dicas,observacoes:null};
+}
+const api={buildLines,parseTreino,parseDieta,estProt};
+if(typeof module!=="undefined") module.exports=api; else root.RumoLocal=api;
+})(typeof window!=="undefined"?window:globalThis);
+
+/* ---- leitura local (sem IA), usada no app instalado sem chave ---- */
+function hasKey(){ try{ return !!JSON.parse(localStorage.getItem("rumo90-ai")||"{}").key; }catch(e){ return false; } }
+function useLocal(sec){ return (sec==="treino"||sec==="comida")&&(window.__PWA?!hasKey():!SAMPLE); }
+let pdfMod=null;
+async function pdfPages(file){
+  let lib;
+  if(window.__PWA){ if(!pdfMod){ try{ pdfMod=await import("./vendor/pdf.min.mjs"); pdfMod.GlobalWorkerOptions.workerSrc="./vendor/pdf.worker.min.mjs"; }catch(e){ pdfMod=null; throw {code:"pdf_load"}; } } lib=pdfMod; }
+  else { try{ lib=await pdfLib(); }catch(e){ throw {code:"pdf_load"}; } }
+  const doc=await lib.getDocument({data:new Uint8Array(await file.arrayBuffer()),isEvalSupported:false}).promise;
+  const pages=[]; for(let p=1;p<=Math.min(doc.numPages,20);p++){ const pg=await doc.getPage(p); pages.push({items:(await pg.getTextContent()).items}); }
+  return pages; }
+async function runLocal(sec,file,fname){
+  const t=file.type||extType(file.name||"");
+  if(!/pdf/.test(t)&&!/\.pdf$/i.test(fname||"")){ aiBar("err",`A leitura grátis no celular funciona com PDF. Para foto ou print, peça o arquivo em PDF ao ${sec==="treino"?"personal":"nutricionista"} ou importe pela versão do app no Claude.`); return; }
+  try{ aiBar("busy",`Lendo ${fname} no celular…`);
+    const pages=await pdfPages(file), chars=pages.reduce((a,p)=>a+p.items.reduce((b,i)=>b+(i.str||"").trim().length,0),0);
+    if(chars<80){ aiBar("err","Este PDF é uma imagem escaneada, sem texto. A leitura grátis no celular não consegue ler; importe pela versão do app no Claude."); return; }
+    const lines=RumoLocal.buildLines(pages), data=sec==="treino"?RumoLocal.parseTreino(lines):RumoLocal.parseDieta(lines);
+    const ok=sec==="treino"?data.treinos.length:data.refeicoes.length;
+    if(!ok){ aiBar("err",`Não reconheci ${sec==="treino"?"exercícios":"refeições"} neste PDF. Confira se é ${AI[sec].what}; se for, me mande o arquivo para eu ajustar o leitor.`); return; }
+    aiBar("off"); showReview(sec,data,fname+" · lido no celular",{set textContent(x){ if(x) aiBar("err",x); }});
+  }catch(e){ aiBar("err",e&&e.code==="pdf_load"?"Não consegui abrir o leitor de PDF. Feche e abra o app e tente de novo.":"Não consegui ler este PDF. Ele pode estar protegido ou corrompido."); }
+}
+
 /* ============ ANEXOS ============ */
 const ATT={treino:"Ficha da academia, prints ou vídeos curtos de execução",comida:"Plano do nutricionista, rótulos, fotos de pratos",semana:"Prints da balança, anotações da semana",pressao:"Fotos do aparelho, relatório de MAPA",cargas:"Planilhas ou fotos das anotações",exames:"PDFs e fotos dos laudos",consulta:"Receitas, pedidos médicos, relatórios"};
 const AI={exames:{btn:"Ler laudo e preencher",what:"o laudo"},comida:{btn:"Ler dieta da nutricionista",what:"a dieta"},treino:{btn:"Ler treino do personal",what:"a ficha de treino"}};
@@ -1380,6 +1578,7 @@ function aiBar(state,text,opts={}){ let b=$("aiBar"); if(!b){ b=document.createE
   if(state!=="busy") add("Fechar",()=>aiBar("off"));
   if(state==="ok") setTimeout(()=>{ if(b.dataset.s==="ok") aiBar("off"); },5000); }
 async function runAI(sec,file,fname,ui){
+  if(useLocal(sec)) return runLocal(sec,file,fname);
   const say=t=>{ const el=$("impm_"+sec)||$("am_"+sec); if(el) el.textContent=t; };
   if(!SAMPLE){ aiBar("err","A leitura com IA não está disponível nesta visualização."); return; }
   const ctl=new AbortController(), what=AI[sec].what;
@@ -1489,7 +1688,7 @@ function showReview(sec,data,fname,msgEl){
     openReview("Dieta lida do arquivo",html,()=>{ if(S.dieta) S.dietaHist=(S.dietaHist||[]).concat([S.dieta]).slice(-5);
       S.dieta={kcal_total:num(data.kcal_total),proteina_total_g:num(data.proteina_total_g),agua:data.agua?String(data.agua).slice(0,60):null,
         refeicoes:M.slice(0,8).map(r=>({nome:String(r.nome||"").slice(0,40),horario:String(r.horario||"").slice(0,10),descricao:String(r.descricao||"").slice(0,300),itens:arr(r.itens).slice(0,15).map(x=>({alimento:String(x.alimento||"").slice(0,60),quantidade:String(x.quantidade||"").slice(0,40)})),substituicoes:arr(r.substituicoes).slice(0,8).map(s=>String(s).slice(0,160)),proteina_g:num(r.proteina_g),kcal:num(r.kcal),proteina_estimada:!!r.proteina_estimada})),
-        cardapio_semanal:arr(data.cardapio_semanal).slice(0,7),dicas:arr(data.dicas).slice(0,10).map(s=>String(s).slice(0,200)),observacoes:data.observacoes?String(data.observacoes).slice(0,300):"",fonte:fname,d:TK};
+        cardapio_semanal:arr(data.cardapio_semanal).slice(0,7),dicas:arr(data.dicas).slice(0,15).map(s=>String(s).slice(0,300)),observacoes:data.observacoes?String(data.observacoes).slice(0,300):"",fonte:fname,d:TK};
       applyPlans(); save(); toast("Dieta importada"); go("comida"); aiBar("ok",`Dieta lida: ${M.length} refeições.`); });
     return; }
   const T=arr(data.treinos).filter(t=>t&&arr(t.exercicios).length);
@@ -1500,7 +1699,7 @@ function showReview(sec,data,fname,msgEl){
     <p class="foot">Estas fichas passaram a valer. A anterior fica guardada, e o histórico de cargas continua pelo nome de cada exercício.</p>`;
   openReview("Treino lido do arquivo",html,()=>{ if(S.treinoPlan) S.treinoHist=(S.treinoHist||[]).concat([S.treinoPlan]).slice(-5);
     S.treinoPlan={treinos:T.slice(0,7).map(t=>({codigo:t.codigo,nome:String(t.nome||"").slice(0,60),nota:t.nota?String(t.nota).slice(0,300):"",dias:arr(t.dias),exercicios:t.exercicios.slice(0,25).map(e=>({nome:String(e.nome||"").slice(0,60),series:parseInt(e.series)||null,reps:String(e.reps||"").slice(0,24),carga:e.carga?String(e.carga).slice(0,40):"",carga_kg:num(e.carga_kg),descanso_s:num(e.descanso_s),esforco:e.esforco?String(e.esforco).slice(0,30):"",obs:e.obs?String(e.obs).slice(0,160):""}))})),
-      dicas:arr(data.dicas).slice(0,12).map(s=>String(s).slice(0,240)),observacoes:data.observacoes?String(data.observacoes).slice(0,300):"",fonte:fname,d:TK};
+      dicas:arr(data.dicas).slice(0,20).map(s=>String(s).slice(0,300)),observacoes:data.observacoes?String(data.observacoes).slice(0,300):"",fonte:fname,d:TK};
     trT=null; applyPlans(); save(); toast("Ficha importada"); go("treino"); aiBar("ok",`Ficha lida: ${T.length} treino(s) e ${T.reduce((a,t)=>a+t.exercicios.length,0)} exercícios.`); });
 }
 
