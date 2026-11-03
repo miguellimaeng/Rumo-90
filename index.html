@@ -279,6 +279,27 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--panel-2)}
 .undo button{border:0;border-radius:9px;padding:7px 12px;font-weight:650;cursor:pointer;background:rgba(127,127,127,.25);color:inherit}
 .undo #undoBtn{background:var(--target);color:#1A1406}
 @media (min-width:860px){.undo{bottom:24px}}
+/* importar e refeições */
+.imp{text-align:center;padding:30px 18px;display:grid;gap:10px;justify-items:center}
+.imp .ic{width:58px;height:58px;border-radius:16px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.imp h2{font-family:var(--display);font-weight:700;font-size:1.6rem}
+.imp p{max-width:46ch;margin:0;color:var(--muted)}
+.warnline{background:var(--warn-soft);color:var(--warn)!important;border-radius:10px;padding:8px 12px;font-size:.88rem}
+.meals2{display:grid;gap:12px}
+.mc{display:grid;gap:10px}
+.mc-h{display:grid;grid-template-columns:58px minmax(0,1fr);gap:10px;align-items:start}
+.mc-h .t{font-family:var(--display);font-weight:600;font-size:1.25rem;color:var(--muted)}
+.mc-h b{font-size:1.05rem}
+.mc-it{margin:0;padding-left:20px;display:grid;gap:3px;font-size:.9rem}
+.mc-s{border-color:var(--ok)} .mc-p{border-color:var(--warn)} .mc-n{border-color:var(--bad)}
+.mc-now{box-shadow:0 0 0 2px var(--accent-soft),var(--shadow)}
+.st3{display:flex;gap:6px;flex-wrap:wrap}
+.st3 button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:99px;padding:8px 14px;font-weight:600;font-size:.84rem;cursor:pointer}
+.st3 button[data-s="s"][aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:var(--panel)}
+.st3 button[data-s="p"][aria-pressed="true"]{background:var(--warn);border-color:var(--warn);color:var(--panel)}
+.st3 button[data-s="n"][aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:var(--panel)}
+details summary{cursor:pointer;font-size:.86rem;font-weight:600;color:var(--accent);padding:4px 0}
+.tips{margin:0;padding-left:20px;display:grid;gap:7px;font-size:.92rem}
 /* rodapé */
 .brandfoot{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;padding-top:18px;border-top:1px solid var(--line)}
 .brandfoot img{width:56px;height:56px;border-radius:50%}
@@ -297,7 +318,7 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--panel-2)}
     <div class="cv-main">
       <div>
         <h2 class="cv-title">Rumo<br>aos <span class="n">90</span> <span class="kg">kg</span></h2>
-        <p class="cv-sub">12 semanas de alimentação, três treinos de força por semana e acompanhamento de pressão e exames. Começou em 28 de outubro de 2026.</p>
+        <p class="cv-sub">Treino do personal, dieta da nutricionista, peso, pressão e exames num lugar só. Começou em 28 de outubro de 2026.</p>
       </div>
       <div class="cv-ring" id="cvRing" aria-hidden="true"></div>
     </div>
@@ -384,36 +405,45 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--panel-2)}
 
   <!-- TREINO -->
   <section class="view" data-v="treino" hidden>
-    <div class="panel">
-      <div class="tr-head"><div><h2 id="trTitle">Treino</h2><div class="sub" id="trSub"></div></div><div class="seg" id="segTr"></div></div>
-      <div class="prog"><i id="trProg" style="width:0%"></i></div>
-      <div class="row" style="justify-content:space-between"><span class="sub" id="trCount"></span>
-        <div class="row"><span class="timer" id="trTimer">1:30</span><button type="button" class="btn ghost small" id="trRest">Descanso 90 s</button></div></div>
-      <p class="foot" style="margin:10px 0 0">Aqueça 5–10 min e faça 1–3 séries de aproximação nos exercícios grandes. Descanse 60–120 s entre séries (até 180 s nos mais pesados) e não prenda a respiração. Se sentir tontura, pare e avalie a pressão.</p>
-      <div id="trList"></div>
-      <div class="row" style="margin-top:16px"><button class="btn" type="button" id="trDone">Concluir treino</button><span id="trDoneMsg"></span></div>
+    <div style="display:grid;gap:16px">
+      <div id="src_treino"></div>
+      <div id="trEmpty" class="panel imp" hidden></div>
+      <div id="trMain" class="panel" hidden>
+        <div class="tr-head"><div><h2 id="trTitle">Treino</h2><div class="sub" id="trSub"></div></div><div class="seg" id="segTr"></div></div>
+        <div class="prog"><i id="trProg" style="width:0%"></i></div>
+        <div class="row" style="justify-content:space-between"><span class="sub" id="trCount"></span>
+          <div class="row"><span class="timer" id="trTimer">1:30</span><button type="button" class="btn ghost small" id="trRest">Descanso</button></div></div>
+        <div id="trList"></div>
+        <div class="row" style="margin-top:16px"><button class="btn" type="button" id="trDone">Concluir treino</button><span id="trDoneMsg"></span></div>
+        <p class="foot" style="margin:12px 0 0">Ao concluir, as cargas que você não alterou ficam registradas como a indicada (ou a da última vez). Se sentir tontura, pare e avalie a pressão.</p>
+      </div>
+      <div class="grid2">
+        <div class="panel"><div class="sec-h"><h2>Dicas do personal</h2></div><div id="trDicas"></div></div>
+        <div class="panel"><div class="sec-h"><h2>Minhas anotações</h2><span class="sub" id="nt_treino_s"></span></div><textarea id="nt_treino" rows="5" placeholder="Ajustes, sensações, dúvidas para levar ao personal…"></textarea></div>
+      </div>
     </div>
   </section>
 
   <!-- COMIDA -->
   <section class="view" data-v="comida" hidden>
-    <div class="grid2">
-      <div class="panel">
-        <div class="sec-h"><h2>Proteína de hoje</h2><span class="sub" id="cmTot"></span></div>
-        <div class="prog" style="margin-top:0"><i id="cmProg" style="width:0%;background:var(--accent)"></i></div>
-        <p class="foot" style="margin:4px 0 12px">Toque numa refeição e adicione os alimentos. Valores aproximados; confira o rótulo do que você usa.</p>
-        <div class="meals" id="cmMeals"></div>
+    <div style="display:grid;gap:16px">
+      <div id="src_comida"></div>
+      <div id="cmEmpty" class="panel imp" hidden></div>
+      <div id="cmMain" style="display:grid;gap:16px" hidden>
+        <div class="panel">
+          <div class="sec-h"><h2>Hoje na dieta</h2><span class="sub" id="cmTot"></span></div>
+          <div class="prog" style="margin-top:0"><i id="cmProg" style="width:0%;background:var(--accent)"></i></div>
+          <div class="sub" id="cmAder"></div>
+        </div>
+        <div class="meals2" id="cmMeals"></div>
+        <div class="panel" id="cmWeekP" hidden>
+          <div class="sec-h"><h2>Cardápio da semana</h2><span class="sub">Da dieta da nutricionista</span></div>
+          <div class="week7" id="cmWeek"></div>
+        </div>
       </div>
-      <div class="panel">
-        <div class="sec-h"><h2>Adicionar ao <span id="cmSel">café</span></h2></div>
-        <div class="foods" id="cmFoods"></div>
-        <div class="row" style="margin-top:12px"><input id="cmCustom" inputmode="numeric" placeholder="Outro (g de proteína)" style="flex:1;min-width:150px"><button class="btn small" type="button" id="cmAdd">Adicionar</button></div>
-        <div class="items" id="cmItems"></div>
-      </div>
-      <div class="panel span">
-        <div class="sec-h"><h2>Cardápio da semana</h2><span class="sub" id="cmWeekSub">Do e-book; ajuste as porções pelo modelo de 2.300 kcal</span></div>
-        <div class="week7" id="cmWeek"></div>
-        <p class="foot" style="margin-top:12px">Verduras e legumes todos os dias. Evite bebidas açucaradas e excesso de embutidos. Se usar whey, conte a proteína e as calorias na meta do dia.</p>
+      <div class="grid2">
+        <div class="panel"><div class="sec-h"><h2>Dicas da nutricionista</h2></div><div id="cmDicas"></div></div>
+        <div class="panel"><div class="sec-h"><h2>Minhas anotações</h2><span class="sub" id="nt_comida_s"></span></div><textarea id="nt_comida" rows="5" placeholder="Fome, vontades, o que funcionou, dúvidas para a nutricionista…"></textarea></div>
       </div>
     </div>
   </section>
@@ -589,33 +619,15 @@ const START=new Date(2026,9,28);
 const P0={jun:128,ini:118,meta:90,m12:113,m12lo:112,m12hi:114,alt:1.80,prot:160,protLo:150,protHi:170,sono:7,tre:3,exam:new Date(2026,10,30)};
 const DEF_SIN={perda:1.5,sb:100,sa:140,db:60,da:90};
 const NDAYS=84;
-const EXS0=[
- ["A","Leg press","3 × 8–12",1],["A","Supino máquina/halteres","3 × 8–12",1],["A","Remada sentada","3 × 8–12",1],["A","Mesa flexora","2 × 10–15",0],["A","Elevação lateral","2 × 12–15",0],["A","Prancha (s)","3 × 20–40 s",0],
- ["B","Agachamento Smith/banco","3 × 8–10",0],["B","Puxada frontal","3 × 8–12",1],["B","Supino inclinado máquina","3 × 8–12",0],["B","Cadeira extensora","2 × 10–15",0],["B","Rosca direta","2 × 10–12",0],["B","Tríceps na polia","2 × 10–12",0],
- ["C","Terra romeno c/ halteres","3 × 8–10",1],["C","Remada articulada","3 × 8–12",0],["C","Desenvolvimento máquina","2–3 × 8–12",0],["C","Cadeira abdutora","2 × 12–15",0],["C","Panturrilha","3 × 10–15",0],["C","Abdominal na polia","2–3 × 10–15",0]];
-let EXS=EXS0;
-const TR_NOME0={A:"Corpo completo",B:"Pernas, costas e braços",C:"Posterior, ombros e core"};
-let TR_NOME=TR_NOME0;
-let TRAIN_OF={1:"A",3:"B",5:"C"};
+let EXS=[];
+let TR_NOME={};
+let TRAIN_OF={};
 const EXAMES=[["Glicemia","mg/dL",92,-1],["HbA1c","%",5.6,-1],["Insulina","µUI/mL",24.3,-1],["HOMA-IR","",5.5,-1],["LDL","mg/dL",140,-1],["HDL","mg/dL",36,1],["Triglicerídeos","mg/dL",68,0],["Creatinina","mg/dL",0.74,0],["eTFG","mL/min",null,0],["Ureia","mg/dL",null,0],["Sódio","mEq/L",null,0],["Potássio","mEq/L",null,0],["Magnésio","mg/dL",null,0],["ALT (TGP)","U/L",61,-1],["AST (TGO)","U/L",32,-1],["GGT","U/L",42,-1],["Cálcio","mg/dL",null,0],["Vitamina D 25-OH","ng/mL",26,0],["Testosterona total","ng/dL",600,0],["Estradiol","pg/mL",36.9,0],["TSH","µUI/mL",1.98,0],["T4 livre","ng/dL",1.2,0]];
 const CHECK=["Confirmar motivo da furosemida 40 mg e se há restrição de líquidos","Rever olmesartana + furosemida + tadalafila/arginina diante do emagrecimento e PA ~120/80","Verificar creatinina, eTFG, ureia, sódio, potássio e magnésio antes de novembro, se indicado","Confirmar indicação, duração e monitoramento do clomifeno 50 mg/dia","Rever vitamina D3 5.000 UI/dia com 25-OH vitamina D e cálcio","Confirmar dose da CoQ10 e real necessidade","Revisar LDL, ALT e risco metabólico com os exames de novembro","Perguntar sobre creatina 3–5 g/dia (função renal, hidratação, furosemida)"];
 const MEDS=[["08h","Furosemida 40 mg","Perda de líquidos; conferir Na, K, Mg e função renal"],["08h","Olmesartana 20 mg","Acompanhar pressão, potássio e função renal"],["Manhã","Clomifeno 50 mg","Alteração visual requer avaliação"],["Diário","Tadalafila 2,5 mg + arginina 500 mg","Pode somar efeito hipotensor; não associar a nitratos"],["Com refeição","Vitamina D3 5.000 UI","Rever 25-OH D e cálcio"],["Com refeição","Coenzima Q10 (dose a confirmar)","Verificar rótulo; não aumentar"]];
-const MEALS0=[
- {k:"cafe",n:"Café",h:"07h30",hr:7.5,lo:30,hi:40,d:"2 ovos + 2 fatias de pão integral + fruta + iogurte natural proteico"},
- {k:"almoco",n:"Almoço",h:"12h30",hr:12.5,lo:40,hi:50,d:"150–180 g de frango/peixe, 120–160 g de arroz cozido, 1 concha de feijão, verduras"},
- {k:"lanche",n:"Lanche",h:"16h",hr:16,lo:20,hi:30,d:"Iogurte rico em proteína + aveia + fruta"},
- {k:"pre",n:"Pré-treino",h:"18h30",hr:18.5,lo:0,hi:0,d:"Banana + pão ou tapioca com recheio leve; evite refeição gordurosa"},
- {k:"jantar",n:"Jantar",h:"21h",hr:21,lo:40,hi:50,d:"150–180 g de proteína magra, batata ou arroz, legumes; whey só se faltar proteína"}];
-let MEALS=MEALS0;
+let MEALS=[];
 const FOODS=[["2 ovos",12],["Frango 150 g",45],["Peixe 150 g",35],["Patinho 150 g",45],["Iogurte proteico",15],["Iogurte natural",7],["Whey (1 dose)",24],["Feijão (1 concha)",6],["Pão integral (2 fatias)",6],["Queijo branco 30 g",5],["Tofu 100 g",10],["Lentilha (1 concha)",8]];
-const CARD0=[["Seg","Ovos, pão e mamão","Frango, arroz, feijão e brócolis","Iogurte, banana e aveia","Peixe, batata e salada"],
- ["Ter","Iogurte proteico, aveia e frutas","Patinho moído, arroz, feijão e legumes","Sanduíche integral com queijo branco","Frango, mandioca e abobrinha"],
- ["Qua","Omelete, tapioca e fruta","Peixe, arroz, feijão e salada","Banana e iogurte; pão antes do treino","Carne magra, batata-doce e vegetais"],
- ["Qui","Ovos, pão integral e maçã","Frango desfiado, macarrão integral e legumes","Iogurte + chia + fruta","Omelete e arroz, feijão e salada"],
- ["Sex","Iogurte, granola sem excesso de açúcar e fruta","Patinho, arroz, feijão e couve","Tapioca pequena com queijo e fruta","Peixe, arroz e vegetais"],
- ["Sáb","Ovos, pão e fruta","Frango assado, batata e legumes","Frutas e iogurte","Carne magra, lentilha e salada"],
- ["Dom","Panqueca de aveia e ovos","Proteína magra, arroz e feijão","Iogurte ou sanduíche","Sopa com frango, legumes e batata"]];
-let CARD=CARD0;
+let CARD=null;
 const ICON={semana:'<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',pressao:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M8 12h2l1.2-2 1.6 4 1.2-2H16"/>',cargas:'<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>',exames:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/>',consulta:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M8.5 11l2 2 4-4M8.5 17h7"/>',fotos:'<rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8.5 6l1.5-2.5h4L15.5 6"/>'};
 const TILES=[["semana","Registro semanal","Cintura, pressão, sono, calorias"],["pressao","Pressão 14 dias","Manhã e noite, com alerta"],["cargas","Cargas","Histórico por exercício"],["exames","Exames","Junho × novembro"],["consulta","Consulta","Checklist, remédios, dados"],["fotos","Fotos de progresso","Compare mês a mês"]];
 
@@ -624,28 +636,31 @@ const DOWS=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 const na=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").trim();
 const DAYMAP={dom:0,seg:1,ter:2,qua:3,qui:4,sex:5,sab:6};
 const DEFDAYS={1:[1],2:[1,4],3:[1,3,5],4:[1,2,4,5],5:[1,2,3,4,5],6:[1,2,3,4,5,6]};
-let TCODES=["A","B","C"];
+let TCODES=[];
 const dayLbl=c=>Object.keys(TRAIN_OF).filter(k=>TRAIN_OF[k]===c).map(k=>DOWS[k]).join("/")||"—";
 function normCard(arr){ return ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"].map(d=>{ const r=arr.find(x=>na(x.dia).slice(0,3)===na(d).slice(0,3))||{}; return [d,r.cafe||"—",r.almoco||"—",r.lanche||"—",r.jantar||"—"]; }); }
 function applyPlans(){
   const tp=S.treinoPlan;
+  EXS=[]; TR_NOME={}; TRAIN_OF={}; TCODES=[];
   if(tp&&Array.isArray(tp.treinos)&&tp.treinos.length){
-    EXS=[]; TR_NOME={}; TRAIN_OF={}; TCODES=[];
     tp.treinos.slice(0,7).forEach((t,ti)=>{ let c=String(t.codigo||String.fromCharCode(65+ti)).replace(/[^A-Za-z0-9]/g,"").slice(0,3).toUpperCase()||String.fromCharCode(65+ti); if(TCODES.includes(c)) c=String.fromCharCode(65+ti);
       TCODES.push(c); TR_NOME[c]=String(t.nome||("Treino "+c)).slice(0,50);
-      (Array.isArray(t.exercicios)?t.exercicios:[]).slice(0,20).forEach((e,ei)=>EXS.push([c,String(e.nome||"Exercício").slice(0,60),`${parseInt(e.series)||3} × ${String(e.reps||"8–12").slice(0,20)}`,ei<2?1:0,String(e.obs||"").slice(0,120)])); });
+      (Array.isArray(t.exercicios)?t.exercicios:[]).slice(0,25).forEach((e,ei)=>EXS.push([c,String(e.nome||"Exercício").slice(0,60),`${parseInt(e.series)||3} × ${String(e.reps||"—").slice(0,24)}`,ei<2?1:0,String(e.obs||"").slice(0,160),String(e.carga||"").slice(0,40),num(e.carga_kg),num(e.descanso_s)])); });
     let used=false; tp.treinos.slice(0,7).forEach((t,ti)=>{ (Array.isArray(t.dias)?t.dias:[]).forEach(d=>{ const n=DAYMAP[na(d).slice(0,3)]; if(n!=null&&TRAIN_OF[n]==null){ TRAIN_OF[n]=TCODES[ti]; used=true; } }); });
     if(!used){ (DEFDAYS[Math.min(6,TCODES.length)]||[1,3,5]).forEach((d,i)=>TRAIN_OF[d]=TCODES[i%TCODES.length]); }
-  } else { EXS=EXS0; TR_NOME=TR_NOME0; TRAIN_OF={1:"A",3:"B",5:"C"}; TCODES=["A","B","C"]; }
+  }
   P0.tre=Object.keys(TRAIN_OF).length||3;
-  const dp=S.dieta;
+  const dp=S.dieta; MEALS=[]; CARD=null; P0.prot=160; P0.protLo=150; P0.protHi=170;
   if(dp&&Array.isArray(dp.refeicoes)&&dp.refeicoes.length){
     MEALS=dp.refeicoes.slice(0,8).map((r,i)=>{ const hm=String(r.horario||"").match(/(\d{1,2})\s*[:hH]?\s*(\d{2})?/); const hr=hm?(+hm[1]+(+(hm[2]||0))/60):(7+i*3); const p=num(r.proteina_g);
-      return {k:"r"+i,n:String(r.nome||"Refeição "+(i+1)).slice(0,40),h:hm?`${String(hm[1]).padStart(2,"0")}h${hm[2]&&hm[2]!=="00"?hm[2]:""}`:"",hr,lo:p?Math.max(0,Math.round(p-5)):0,hi:p?Math.round(p+5):0,d:String(r.descricao||"").slice(0,300)}; }).sort((a,b)=>a.hr-b.hr);
-    const tot=num(dp.proteina_total_g)||MEALS.reduce((a,m)=>a+(m.lo?(m.lo+m.hi)/2:0),0);
-    P0.prot=Math.round(tot)||160; P0.protLo=Math.round(P0.prot*.94); P0.protHi=Math.round(P0.prot*1.06);
+      const it=Array.isArray(r.itens)?r.itens.filter(x=>x&&x.alimento).slice(0,15):[];
+      return {k:"r"+i,n:String(r.nome||"Refeição "+(i+1)).slice(0,40),h:hm?`${String(hm[1]).padStart(2,"0")}h${hm[2]&&hm[2]!=="00"?hm[2]:""}`:"",hr,prot:p,lo:p?Math.max(0,Math.round(p-5)):0,hi:p?Math.round(p+5):0,kcal:num(r.kcal),est:!!r.proteina_estimada,
+        itens:it.map(x=>({a:String(x.alimento).slice(0,60),q:String(x.quantidade||"").slice(0,40)})),subs:(Array.isArray(r.substituicoes)?r.substituicoes:[]).slice(0,8).map(s=>String(s).slice(0,160)),
+        d:String(r.descricao||it.map(x=>`${x.quantidade?x.quantidade+" de ":""}${x.alimento}`).join(", ")).slice(0,300)}; }).sort((a,b)=>a.hr-b.hr);
+    const tot=num(dp.proteina_total_g)||MEALS.reduce((a,m)=>a+(m.prot||0),0);
+    if(tot){ P0.prot=Math.round(tot); P0.protLo=Math.round(P0.prot*.94); P0.protHi=Math.round(P0.prot*1.06); }
     CARD=(Array.isArray(dp.cardapio_semanal)&&dp.cardapio_semanal.length)?normCard(dp.cardapio_semanal):null;
-  } else { MEALS=MEALS0; CARD=CARD0; P0.prot=160; P0.protLo=150; P0.protHi=170; }
+  }
 }
 
 /* ============ estado e utilitários ============ */
@@ -667,8 +682,8 @@ const curWeek=Math.max(1,Math.min(12,Math.floor((today-START)/864e5/7)+1));
 const DOW=["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
 const sin=()=>Object.assign({},DEF_SIN,S.sin||{});
 const isTrainDay=()=>today.getDay() in TRAIN_OF;
-function nextTreino(){ for(let i=0;i<7;i++){ const d=addDays(today,i); if(d.getDay() in TRAIN_OF) return {t:TRAIN_OF[d.getDay()],d,i}; } }
-let tt; function toast(m){ const t=$("toast"); t.textContent=m; t.hidden=false; clearTimeout(tt); tt=setTimeout(()=>t.hidden=true,2200); }
+function nextTreino(){ for(let i=0;i<7;i++){ const d=addDays(today,i); if(d.getDay() in TRAIN_OF) return {t:TRAIN_OF[d.getDay()],d,i}; } return null; }
+let tt; function toast(m){ const u=document.getElementById("undo"); if(u&&!u.hidden){ u.hidden=true; } const t=$("toast"); t.textContent=m; t.hidden=false; clearTimeout(tt); tt=setTimeout(()=>t.hidden=true,2200); }
 
 /* ============ cálculos ============ */
 function dailyRaw(){ const o=[]; for(let i=0;i<NDAYS;i++){ const d=S.diario[dkey(addDays(START,i))]; o.push(d?num(d.peso):null);} return o; }
@@ -676,7 +691,10 @@ function dailyMA(raw){ return raw.map((v,i)=>{ if(v==null) return null; return m
 function dayKeysOfWeek(w){ return Array.from({length:7},(_,i)=>dkey(addDays(START,(w-1)*7+i))); }
 function dailyInWeek(w){ return dayKeysOfWeek(w).map(k=>S.diario[k]).filter(d=>d&&num(d.peso)!=null).map(d=>num(d.peso)); }
 function treinosInWeek(w){ return dayKeysOfWeek(w).filter(k=>S.diario[k]&&S.diario[k].treino).length; }
-function protOfDay(k){ const d=S.diario[k]; if(!d||!d.itens||!d.itens.length) return null; return d.itens.reduce((a,b)=>a+(+b.g||0),0); }
+function mealProt(k,m){ const d=S.diario[k]||{}; const it=(d.itens||[]).filter(x=>x.m===m.k); if(it.length) return it.reduce((a,b)=>a+(+b.g||0),0); const s=(d.ref||{})[m.k]; if(!s) return null; if(m.prot==null) return 0; return s==="s"?m.prot:s==="p"?m.prot/2:0; }
+function protOfDay(k){ const d=S.diario[k]; if(!d) return null; let any=false,t=0; MEALS.forEach(m=>{ const v=mealProt(k,m); if(v!=null){ any=true; t+=v; } }); (d.itens||[]).filter(x=>!MEALS.find(m=>m.k===x.m)).forEach(x=>{ any=true; t+=+x.g||0; }); return any?t:null; }
+function dietDay(k){ if(!MEALS.length) return null; const r=(S.diario[k]||{}).ref||{}; const ks=MEALS.filter(m=>r[m.k]); if(!ks.length) return null; return ks.reduce((a,m)=>a+(r[m.k]==="s"?1:r[m.k]==="p"?.5:0),0)/ks.length; }
+function dietWeek(w){ return avgOf(dayKeysOfWeek(w).map(dietDay)); }
 function protWeekDaily(w){ return avgOf(dayKeysOfWeek(w).map(protOfDay)); }
 function weekAvg(w){ const dv=dailyInWeek(w); if(dv.length) return mean(dv); const s=S.semanas[w]; if(!s) return null; const v=[s.p1,s.p2,s.p3].map(num).filter(x=>x!=null); return v.length?mean(v):null; }
 const traj=w=>P0.ini-(P0.ini-P0.m12)*w/12;
@@ -700,7 +718,7 @@ function derive(){
     ritmo:elapsedW?(P0.ini-last)/elapsedW:null,
     cintVar:cf.length>=2?cf[cf.length-1]-cf[0]:null, cintLast:cf.length?cf[cf.length-1]:null,
     ader:tf.length?tf.reduce((a,b)=>a+b,0)/(P0.tre*tf.length):null,
-    sonoAvg:avgOf(sono), protAvg:avgOf(prot), kcalAvg:avgOf(kcal)};
+    sonoAvg:avgOf(sono), diet:Array.from({length:12},(_,i)=>dietWeek(i+1)), dietAvg:avgOf(Array.from({length:12},(_,i)=>dietWeek(i+1))), protAvg:avgOf(prot), kcalAvg:avgOf(kcal)};
 }
 
 /* ============ desenho ============ */
@@ -836,7 +854,7 @@ function setTreToggle(on){ const b=$("q_tre"); b.setAttribute("aria-pressed",on)
 function curMeal(){ const h=new Date().getHours()+new Date().getMinutes()/60; return MEALS.find(m=>m.hr+1>h)||null; }
 function renderHoje(D){
   $("tdTitle").textContent=DOW[today.getDay()].replace(/^./,c=>c.toUpperCase())+", "+today.toLocaleDateString("pt-BR",{day:"2-digit",month:"long"});
-  $("tdSub").textContent=`Semana ${curWeek} de 12 · ${isTrainDay()?"dia de Treino "+TRAIN_OF[today.getDay()]:"dia de descanso ou caminhada"}`;
+  $("tdSub").textContent=`Semana ${curWeek} de 12 · ${isTrainDay()?"dia de Treino "+TRAIN_OF[today.getDay()]:TCODES.length?"sem treino na ficha hoje":"sem ficha de treino"}`;
   const k=$("q_data").value||TK, d=S.diario[k]||{};
   if(document.activeElement!==$("q_peso")) $("q_peso").value=d.peso!=null?String(d.peso).replace(".",","):"";
   setTreToggle(!!d.treino);
@@ -853,25 +871,28 @@ function renderHoje(D){
   $("tdProtRing").innerHTML=ring(pt/P0.prot,86,{stroke:9,color:pt>=P0.protLo?"var(--ok)":"var(--accent)",label:Math.round(Math.min(1,pt/P0.prot)*100)+"%"});
   $("tdProtV").textContent=fmt(pt,0)+" g"; $("tdProtS").textContent=pt>=P0.protLo?"Meta do dia alcançada":`Faltam ${fmt(Math.max(0,P0.protLo-pt),0)} g para ${P0.protLo} g`;
   // treino
-  const ses=S.sessoes[TK]; const tT=isTrainDay()?TRAIN_OF[today.getDay()]:nextTreino().t;
+  if(!TCODES.length){ $("tdTrRing").innerHTML=ring(0,86,{stroke:9,color:"var(--ok)",label:"—"}); $("tdTrL").textContent="Treino"; $("tdTrV").textContent="Sem ficha"; $("tdTrS").textContent="Importe a ficha do personal"; $("tdTrBtn").textContent="Importar ficha"; }
+  else { const ses=S.sessoes[TK], nt=nextTreino(); const tT=isTrainDay()?TRAIN_OF[today.getDay()]:nt.t;
   const tot=EXS.filter(e=>e[0]===tT).reduce((a,e)=>a+setsOf(e[2]),0);
   const dn=ses&&ses.t===tT?Object.values(ses.sets||{}).reduce((a,arr)=>a+arr.filter(Boolean).length,0):0;
   const fin=(ses&&ses.t===tT&&ses.done)||(S.diario[TK]||{}).treino;
-  $("tdTrRing").innerHTML=ring(fin?1:dn/tot,86,{stroke:9,color:"var(--ok)",label:tT});
+  $("tdTrRing").innerHTML=ring(fin?1:tot?dn/tot:0,86,{stroke:9,color:"var(--ok)",label:tT});
   $("tdTrL").textContent=isTrainDay()?"Treino de hoje":"Próximo treino";
-  $("tdTrV").textContent=isTrainDay()?(fin?"Concluído":`${dn} de ${tot} séries`):`${DOW[nextTreino().d.getDay()]}`;
-  $("tdTrS").textContent=TR_NOME[tT]+(isTrainDay()?"":" · hoje: caminhada de 20–30 min, se quiser");
-  $("tdTrBtn").textContent=isTrainDay()?(fin?"Ver treino":"Abrir treino"):"Ver treino "+tT;
+  $("tdTrV").textContent=isTrainDay()?(fin?"Concluído":`${dn} de ${tot} séries`):`${DOW[nt.d.getDay()]}`;
+  $("tdTrS").textContent=TR_NOME[tT]||"";
+  $("tdTrBtn").textContent=isTrainDay()?(fin?"Ver treino":"Abrir treino"):"Ver treino "+tT; }
   // semana
   const wDays=Math.min(7,Math.max(1,Math.round((today-START)/864e5)-(curWeek-1)*7+1));
   const wTre=treinosInWeek(curWeek); const wD=dailyInWeek(curWeek).length;
   $("tdWkN").textContent=curWeek; $("tdWkRing").innerHTML=ring(wDays/7,86,{stroke:9,color:"var(--target)",label:wDays+"/7"});
   $("tdWkV").textContent=`${wTre} de ${P0.tre} treinos`; $("tdWkS").textContent=`${wD} pesagem(ns) nesta semana`;
   // refeição
-  const m=curMeal(); const dc=CARD?CARD[(today.getDay()+6)%7]:null;
-  if(m){ const idx=dc?{cafe:1,almoco:2,lanche:3,jantar:4}[m.k]:null; $("tdMealT").textContent=m.h+(m.lo?` · meta ${m.lo}–${m.hi} g de proteína`:"");
-    $("tdMeal").innerHTML=`<div style="display:grid;gap:4px"><b style="font-size:1.05rem">${m.n}${idx?": "+esc(dc[idx]):""}</b><span class="sub">${S.dieta?"Dieta da nutricionista":"Modelo do e-book"}: ${esc(m.d)}</span><div class="row" style="margin-top:8px"><button class="btn small" data-go="comida" data-meal="${m.k}">Registrar ${m.n.toLowerCase()}</button></div></div>`; }
-  else { $("tdMealT").textContent="Dia encerrado"; $("tdMeal").innerHTML=`<span class="sub">Amanhã: ${esc(MEALS[0].n.toLowerCase())}${MEALS[0].h?" às "+MEALS[0].h:""}${CARD?" com "+esc(CARD[today.getDay()%7][1].toLowerCase()):""}.</span>`; }
+  if(!MEALS.length){ $("tdMealT").textContent=""; $("tdMeal").innerHTML=`<div style="display:grid;gap:6px"><span class="sub">Importe a dieta da nutricionista para ver aqui a próxima refeição e marcar se seguiu.</span><div class="row"><button class="btn small" data-go="comida">Importar dieta</button></div></div>`; }
+  else { const m=curMeal();
+  if(m){ $("tdMealT").textContent=(m.h||"")+(m.prot!=null?` · ~${fmt(m.prot,0)} g de proteína`:"");
+    $("tdMeal").innerHTML=`<div style="display:grid;gap:8px"><b style="font-size:1.05rem">${esc(m.n)}</b><span class="sub">${esc(m.d)}</span>${statusBtns(TK,m)}<div class="row"><button class="linkbtn" data-go="comida" data-meal="${m.k}">Ver refeição e detalhar</button></div></div>`; }
+  else { $("tdMealT").textContent="Dia encerrado"; const r=(S.diario[TK]||{}).ref||{}, pend=MEALS.filter(x=>!r[x.k]);
+    $("tdMeal").innerHTML=`<span class="sub">${pend.length?`Faltou marcar: ${pend.map(x=>esc(x.n)).join(", ")}. `:""}Amanhã: ${esc(MEALS[0].n.toLowerCase())}${MEALS[0].h?" às "+MEALS[0].h:""}.</span>${pend.length?`<div class="row" style="margin-top:8px"><button class="btn small" data-go="comida">Marcar refeições</button></div>`:""}`; } }
   const L=buildAlerts(D).filter(a=>a[0]==="warn"||a[0]==="bad");
   $("tdAlerts").innerHTML=L.length?alHTML(L.slice(0,4)):alHTML([["ok","Tudo certo","Nada fora do esperado nos seus registros."]]);
 }
@@ -900,6 +921,7 @@ function renderPainel(D){
     ["Treinos",D.ader==null?"—":Math.round(D.ader*100)+"%",`Sessões feitas ÷ ${P0.tre} por semana`,D.tre,D.ader==null?"":st(D.ader>=.9,D.ader<.67)],
     ["Proteína",D.protAvg==null?"—":fmt(D.protAvg,0)+" g",`Média diária · meta ${P0.protLo}–${P0.protHi}`,D.prot,D.protAvg==null?"":st(D.protAvg>=P0.protLo,D.protAvg<P0.protLo)],
     ["Sono",D.sonoAvg==null?"—":fmt(D.sonoAvg)+" h","Meta 7–9 h por noite",D.sono,D.sonoAvg==null?"":st(D.sonoAvg>=7,D.sonoAvg<7)],
+    ["Dieta seguida",D.dietAvg==null?"—":Math.round(D.dietAvg*100)+"%",MEALS.length?"Refeições marcadas como seguidas":"Importe a dieta em Comida",D.diet,D.dietAvg==null?"":st(D.dietAvg>=.8,D.dietAvg<.6)],
     ["IMC",fmt(D.imc),"Altura 1,80 m",D.pesos.map(p=>p==null?null:p/(P0.alt*P0.alt)),""]];
   $("kpis").innerHTML=K.map(k=>`<div class="kpi"><div class="top2"><span class="label">${k[0]}</span>${k[4]}</div><div class="v">${k[1]}</div><div class="h">${k[2]}</div>${spark(k[3])}</div>`).join("");
   $("alerts").innerHTML=alHTML(buildAlerts(D));
@@ -915,74 +937,104 @@ function renderPainel(D){
   if(!cv.some(x=>x!=null)) $("cCint").insertAdjacentHTML("beforeend",`<div class="empty-note">A primeira medida de cintura aparece aqui (Mais › Registro semanal).</div>`);
   barChart($("cTreino"),D.tre,P0.tre); $("cTrMeta").textContent="Meta: "+P0.tre; $("cProtMeta").textContent=`Meta ${P0.protLo}–${P0.protHi} g`;
   lineChart($("cProt"),{series:[{name:"Proteína",v:D.prot,color:"var(--ok)",area:true,unit:" g",dec:0,joinGaps:true,endLabel:true}],h:180,band:[P0.protLo,P0.protHi],extra:[120,180],minPad:5});
-  if(!D.prot.some(x=>x!=null)) $("cProt").insertAdjacentHTML("beforeend",`<div class="empty-note">Anote as refeições em Comida; a faixa verde é a meta.</div>`);
+  if(!D.prot.some(x=>x!=null)) $("cProt").insertAdjacentHTML("beforeend",`<div class="empty-note">Marque as refeições em Comida; a faixa verde é a meta.</div>`);
   const pal=["var(--accent)","var(--target)","var(--ok)","var(--bad)","var(--muted)"], keys=EXS.filter(e=>e[3]).slice(0,5);
   const sr=keys.map((e,i)=>({name:e[1],v:Array.from({length:12},(_,w)=>num((S.cargas[e[1]]||{})[w+1])),color:pal[i],unit:" kg",joinGaps:true}));
   const any=sr.some(s=>s.v.some(v=>v!=null));
   lineChart($("cCarga"),{series:sr,h:200,extra:any?[]:[40,100]});
   $("lgCarga").innerHTML=keys.map((e,i)=>`<span><i style="background:${pal[i]}"></i>${e[1]}</span>`).join("");
-  if(!any) $("cCarga").insertAdjacentHTML("beforeend",`<div class="empty-note">As cargas anotadas no Treino aparecem aqui.</div>`);
+  if(!any) $("cCarga").insertAdjacentHTML("beforeend",`<div class="empty-note">As cargas registradas no Treino aparecem aqui.</div>`);
 }
 
 /* ============ TREINO ============ */
-let trT=isTrainDay()?TRAIN_OF[today.getDay()]:nextTreino().t;
+let trT=null;
 function setsOf(sch){ const m=sch.split("×")[0].match(/\d+/g); return m?Math.max(...m.map(Number)):3; }
 function lastLoad(ex){ const h=S.cargas[ex]||{}; for(let w=curWeek-1;w>=1;w--) if(num(h[w])!=null) return [w,num(h[w])]; return null; }
-function fase(w){ return w<=2?"Reentrada e técnica: termine com 3 repetições em reserva":w<=4?"Consistência: 2–3 repetições em reserva":w<=8?"Progressão controlada: +2–5% ao fechar o topo da faixa":"Consolidação: mantenha a técnica, reduza volume se a recuperação piorar"; }
+const ICON_IMP='<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>';
+const IMPTXT={treino:{t:"Importe a ficha do personal",p:"Envie o PDF, a foto ou o print da ficha. O app lê os exercícios, as séries, as repetições, as cargas e as dicas, e monta seus treinos.",b:"Importar ficha"},
+  comida:{t:"Importe a dieta da nutricionista",p:"Envie o PDF ou a foto da dieta. O app lê as refeições, os horários, as quantidades, as substituições e as dicas.",b:"Importar dieta"}};
+function needKey(){ if(!window.__PWA) return false; try{ return !JSON.parse(localStorage.getItem("rumo90-ai")||"{}").key; }catch(e){ return true; } }
+function impCard(sec){ const x=IMPTXT[sec], el=$(sec==="treino"?"trEmpty":"cmEmpty");
+  el.innerHTML=`<div class="ic">${ICON_IMP}</div><h2>${x.t}</h2><p>${x.p}</p>
+    ${needKey()?`<p class="warnline">Antes, configure a chave da leitura automática. <button type="button" class="linkbtn" data-go="consulta">Abrir configuração</button></p>`:""}
+    <div class="row" style="justify-content:center"><label class="btn" for="imp_${sec}">${x.b}</label><input type="file" id="imp_${sec}" accept="image/*,application/pdf,.pdf,.txt" hidden><button type="button" class="btn ghost small" id="imps_${sec}" hidden>Cancelar</button></div>
+    <span class="sub" id="impm_${sec}"></span>`;
+  bindImp(sec); }
+function bindImp(sec){ const i=$("imp_"+sec); if(!i) return; i.addEventListener("change",e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=""; if(f) importFlow(sec,f,{msg:$("impm_"+sec),stop:$("imps_"+sec)}); }); }
+function renderTips(sec){ const p=sec==="treino"?S.treinoPlan:S.dieta, el=$(sec==="treino"?"trDicas":"cmDicas");
+  const L=[]; if(p){ (Array.isArray(p.dicas)?p.dicas:[]).forEach(d=>L.push(d)); if(p.agua) L.push("Água: "+p.agua); if(p.observacoes&&!L.includes(p.observacoes)) L.push(p.observacoes); }
+  el.innerHTML=L.length?`<ul class="tips">${L.map(d=>`<li>${esc(d)}</li>`).join("")}</ul>`:`<span class="sub">${p?"O arquivo não trouxe dicas.":"As dicas do arquivo importado aparecem aqui."}</span>`;
+  const ta=$("nt_"+sec); if(document.activeElement!==ta) ta.value=(S.notas||{})[sec]||""; }
+["treino","comida"].forEach(sec=>{ let nt=null; $("nt_"+sec).addEventListener("input",e=>{ S.notas=S.notas||{}; S.notas[sec]=e.target.value; clearTimeout(nt); nt=setTimeout(()=>{ save(); $("nt_"+sec+"_s").textContent="Salvo"; setTimeout(()=>$("nt_"+sec+"_s").textContent="",1500); },600); }); });
 function renderTreino(){
+  srcBanner("treino"); renderTips("treino");
+  const has=TCODES.length>0; $("trEmpty").hidden=has; $("trMain").hidden=!has;
+  if(!has){ impCard("treino"); return; }
   if(!TCODES.includes(trT)) trT=isTrainDay()?TRAIN_OF[today.getDay()]:nextTreino().t;
-  srcBanner("treino");
-  const k=TK, sess=S.sessoes[k]&&S.sessoes[k].t===trT?S.sessoes[k]:{t:trT,sets:{}}, dayT=TRAIN_OF[today.getDay()];
+  const k=TK, sess=S.sessoes[k]&&S.sessoes[k].t===trT?S.sessoes[k]:{t:trT,sets:{}}, dayT=TRAIN_OF[today.getDay()], nt=nextTreino();
+  const list=EXS.filter(e=>e[0]===trT);
   $("trTitle").textContent=`Treino ${trT} · ${TR_NOME[trT]}`;
-  $("trSub").textContent=dayT?(dayT===trT?`Hoje, ${DOW[today.getDay()]} · semana ${curWeek} · ${fase(curWeek)}`:`Hoje o plano indica o Treino ${dayT}. Você está vendo o ${trT}.`):`Hoje é dia de descanso ou caminhada de 20–30 min. Próximo: Treino ${nextTreino().t} na ${DOW[nextTreino().d.getDay()]}.`;
+  $("trSub").textContent=dayT?(dayT===trT?`Hoje, ${DOW[today.getDay()]} · ${list.length} exercícios`:`Hoje a ficha indica o Treino ${dayT}. Você está vendo o ${trT}.`):`Hoje não há treino na ficha. Próximo: Treino ${nt.t} na ${DOW[nt.d.getDay()]}.`;
   $("segTr").innerHTML=TCODES.map(t=>`<button type="button" aria-pressed="${t===trT}" data-t="${t}">${dayLbl(t)} · ${t}</button>`).join("");
   $("segTr").querySelectorAll("button").forEach(b=>b.onclick=()=>{trT=b.dataset.t;renderTreino();});
   let tot=0,done=0;
-  $("trList").innerHTML=EXS.filter(e=>e[0]===trT).map(e=>{ const n=setsOf(e[2]); tot+=n; const stt=sess.sets[e[1]]||[]; done+=stt.filter(Boolean).length;
-    const ll=lastLoad(e[1]), cur=(S.cargas[e[1]]||{})[curWeek], unit=e[1].includes("(s)")?"s":"kg";
-    let sug=""; if(ll&&curWeek>=5&&curWeek<=8&&unit==="kg"){ const x=Math.round(ll[1]*1.03*2)/2; if(x>ll[1]) sug=`Fechou o topo da faixa com boa técnica? Tente ~${fmt(x)} kg`; }
-    return `<div class="trx"><div><b>${e[1]}</b>${e[3]?' <span class="chip acc">chave</span>':''}<div class="meta">${esc(e[2])}${ll?` · semana ${ll[0]}: ${fmt(ll[1])} ${unit}`:" · sem registro anterior"}</div>${e[4]?`<div class="meta">${esc(e[4])}</div>`:""}${sug?`<div class="sug">${sug}</div>`:""}</div>
-      <input inputmode="decimal" data-ex="${esc(e[1])}" value="${cur!=null?String(cur).replace(".",","):""}" placeholder="${ll?fmt(ll[1]):unit}" aria-label="Carga ${esc(e[1])} (${unit})">
-      <div class="sets">${Array.from({length:n},(_,i)=>`<button type="button" class="set" data-ex="${esc(e[1])}" data-i="${i}" aria-pressed="${!!stt[i]}" aria-label="Série ${i+1}">${i+1}</button>`).join("")}</div></div>`; }).join("");
+  $("trList").innerHTML=list.map(e=>{ const n=setsOf(e[2]); tot+=n; const stt=sess.sets[e[1]]||[]; done+=stt.filter(Boolean).length;
+    const ll=lastLoad(e[1]), cur=(S.cargas[e[1]]||{})[curWeek], unit=/\(s\)|segundo/i.test(e[1]+e[2])?"s":"kg", ph=e[6]!=null?e[6]:ll?ll[1]:null;
+    const meta=[esc(e[2]), e[5]?`carga ${esc(e[5])}`:"", e[7]?`descanso ${fmt(e[7],0)} s`:""].filter(Boolean).join(" · ");
+    return `<div class="trx"><div><b>${esc(e[1])}</b><div class="meta">${meta}</div>${e[4]?`<div class="meta">${esc(e[4])}</div>`:""}${ll?`<div class="meta">Última vez: ${fmt(ll[1])} ${unit} (semana ${ll[0]})</div>`:""}</div>
+      <input inputmode="decimal" data-ex="${esc(e[1])}" value="${cur!=null?String(cur).replace(".",","):""}" placeholder="${ph!=null?fmt(ph,ph%1?1:0):unit}" aria-label="Carga usada em ${esc(e[1])} (${unit})">
+      <div class="sets">${Array.from({length:n},(_,i)=>`<button type="button" class="set" data-ex="${esc(e[1])}" data-r="${e[7]||90}" data-i="${i}" aria-pressed="${!!stt[i]}" aria-label="Série ${i+1}">${i+1}</button>`).join("")}</div></div>`; }).join("");
   $("trProg").style.width=(tot?done/tot*100:0)+"%"; $("trCount").textContent=`${done} de ${tot} séries`;
   const fin=!!(S.sessoes[k]&&S.sessoes[k].t===trT&&S.sessoes[k].done);
   $("trDoneMsg").innerHTML=fin?'<span class="done-badge">Treino concluído hoje</span>':""; $("trDone").textContent=fin?"Treino concluído ✓":"Concluir treino";
   $("trList").querySelectorAll(".set").forEach(b=>b.onclick=()=>{ const ex=b.dataset.ex,i=+b.dataset.i;
     const s=S.sessoes[k]&&S.sessoes[k].t===trT?S.sessoes[k]:(S.sessoes[k]={t:trT,sets:{}}); const arr=(s.sets[ex]=s.sets[ex]||[]); arr[i]=arr[i]?0:1;
-    save(); renderTreino(); if(arr[i]) startRest(); });
+    save(); renderTreino(); if(arr[i]) startRest(+b.dataset.r||90); });
   $("trList").querySelectorAll("input").forEach(i=>i.addEventListener("change",()=>{ const ex=i.dataset.ex; S.cargas[ex]=S.cargas[ex]||{}; const v=num(i.value); if(v==null) delete S.cargas[ex][curWeek]; else S.cargas[ex][curWeek]=v; save(); }));
 }
 $("trDone").onclick=()=>{ const s=S.sessoes[TK]&&S.sessoes[TK].t===trT?S.sessoes[TK]:(S.sessoes[TK]={t:trT,sets:{}}); s.done=true;
+  EXS.filter(e=>e[0]===trT).forEach(e=>{ const h=(S.cargas[e[1]]=S.cargas[e[1]]||{}); if(num(h[curWeek])!=null) return; const sets=(s.sets[e[1]]||[]).filter(Boolean).length; if(!sets) return; const ll=lastLoad(e[1]); const v=e[6]!=null?e[6]:ll?ll[1]:null; if(v!=null) h[curWeek]=v; });
   S.diario[TK]=Object.assign({},S.diario[TK]||{},{treino:true}); save(); toast("Treino "+trT+" registrado"); renderAll(); };
-let restT=null,restLeft=90;
-function startRest(){ clearInterval(restT); restLeft=90; tick(); restT=setInterval(()=>{ restLeft--; tick(); if(restLeft<=0){ clearInterval(restT); $("trTimer").textContent="Vai!"; } },1000); }
+let restT=null,restLeft=90,restBase=90;
+function startRest(sec){ clearInterval(restT); restBase=sec||restBase||90; restLeft=restBase; tick(); restT=setInterval(()=>{ restLeft--; tick(); if(restLeft<=0){ clearInterval(restT); $("trTimer").textContent="Vai!"; try{ navigator.vibrate&&navigator.vibrate([200,100,200]); }catch(e){} } },1000); }
 function tick(){ $("trTimer").textContent=Math.floor(restLeft/60)+":"+String(restLeft%60).padStart(2,"0"); }
-$("trRest").onclick=startRest;
+$("trRest").onclick=()=>startRest(restBase);
 
 /* ============ COMIDA ============ */
-let selMeal=(curMeal()||MEALS[0]).k; if(selMeal==="pre") selMeal="jantar";
+let focusMeal=null, openDet={};
+const STL={s:"Segui",p:"Em parte",n:"Não segui"};
+function statusBtns(k,m){ const s=((S.diario[k]||{}).ref||{})[m.k]; return `<div class="st3" role="group" aria-label="Como foi ${esc(m.n)}">${["s","p","n"].map(x=>`<button type="button" data-ref="${m.k}" data-s="${x}" aria-pressed="${s===x}">${STL[x]}</button>`).join("")}</div>`; }
+function setRef(k,mk,x){ S.diario[k]=S.diario[k]||{}; const d=S.diario[k]; d.ref=d.ref||{}; if(d.ref[mk]===x) delete d.ref[mk]; else d.ref[mk]=x; if(!Object.keys(d.ref).length) delete d.ref; if(!Object.keys(d).length) delete S.diario[k]; save(); }
+document.addEventListener("click",e=>{ const b=e.target.closest("[data-ref]"); if(!b) return; setRef(TK,b.dataset.ref,b.dataset.s); const m=MEALS.find(x=>x.k===b.dataset.ref); if(m&&((S.diario[TK]||{}).ref||{})[m.k]) toast(`${m.n}: ${STL[b.dataset.s].toLowerCase()}`); renderView(); });
 function itensHoje(){ return ((S.diario[TK]||{}).itens)||[]; }
 function renderComida(){
-  if(!MEALS.find(m=>m.k===selMeal)) selMeal=(curMeal()||MEALS[0]).k;
-  srcBanner("comida");
-  const it=itensHoje(), tot=it.reduce((a,b)=>a+(+b.g||0),0);
-  $("cmTot").textContent=`${fmt(tot,0)} g de ${P0.prot} g`; $("cmProg").style.width=Math.min(100,tot/P0.prot*100)+"%";
-  $("cmMeals").innerHTML=MEALS.map(m=>{ const g=it.filter(x=>x.m===m.k).reduce((a,b)=>a+(+b.g||0),0); const okm=m.lo&&g>=m.lo;
-    return `<button type="button" class="meal" data-m="${m.k}" aria-pressed="${m.k===selMeal}"><span class="t">${m.h}</span><span><b>${m.n}</b><span class="d">${esc(m.d)}</span></span><span class="g">${fmt(g,0)}<small> g</small><br><small>${m.lo?`meta ${m.lo}–${m.hi}`:"opcional"}</small>${okm?' <span class="chip good">ok</span>':''}</span></button>`; }).join("");
-  $("cmMeals").querySelectorAll(".meal").forEach(b=>b.onclick=()=>{ selMeal=b.dataset.m; renderComida(); if(innerWidth<860) $("cmFoods").scrollIntoView({behavior:"smooth",block:"center"}); });
-  $("cmSel").textContent=MEALS.find(m=>m.k===selMeal).n.toLowerCase();
-  $("cmFoods").innerHTML=FOODS.map((f,i)=>`<button type="button" class="food" data-f="${i}"><b>${f[0]}</b><span>≈ ${f[1]} g de proteína</span></button>`).join("");
-  $("cmFoods").querySelectorAll(".food").forEach(b=>b.onclick=()=>addItem(FOODS[+b.dataset.f][0],FOODS[+b.dataset.f][1]));
-  const mine=it.map((x,i)=>[x,i]).filter(([x])=>x.m===selMeal);
-  $("cmItems").innerHTML=mine.length?mine.map(([x,i])=>`<div class="item"><span>${esc(x.n)}</span><span class="row" style="gap:8px"><b>${fmt(+x.g,0)} g</b><button type="button" class="x" data-i="${i}" aria-label="Remover ${esc(x.n)}">×</button></span></div>`).join(""):`<span class="sub">Nada registrado no ${MEALS.find(m=>m.k===selMeal).n.toLowerCase()} ainda.</span>`;
-  $("cmItems").querySelectorAll(".x").forEach(b=>b.onclick=()=>{ const d=S.diario[TK]; d.itens.splice(+b.dataset.i,1); if(!d.itens.length) delete d.itens; if(!Object.keys(d).length) delete S.diario[TK]; save(); renderComida(); renderHoje(derive()); });
-  const di=(today.getDay()+6)%7;
-  $("cmWeekSub").textContent=S.dieta?(CARD?"Da dieta da nutricionista":"A dieta não traz cardápio por dia"):"Do e-book; ajuste as porções pelo modelo de 2.300 kcal";
-  if(!CARD){ $("cmWeek").innerHTML=`<span class="sub">Siga as refeições acima, conforme a dieta. ${S.dieta&&S.dieta.observacoes?esc(S.dieta.observacoes):""}</span>`; return; }
-  $("cmWeek").innerHTML=CARD.map((r,i)=>`<div class="dayrow ${i===di?"hoje":""}"><span class="dn">${r[0]}${i===di?' <span class="chip acc">hoje</span>':''}</span>${["Café","Almoço","Lanche","Jantar"].map((l,j)=>`<span><span class="ml">${l}</span>${esc(r[j+1])}</span>`).join("")}</div>`).join("");
+  srcBanner("comida"); renderTips("comida");
+  const has=MEALS.length>0; $("cmEmpty").hidden=has; $("cmMain").hidden=!has;
+  if(!has){ impCard("comida"); return; }
+  const pt=protOfDay(TK)||0, r=(S.diario[TK]||{}).ref||{}, nS=MEALS.filter(m=>r[m.k]==="s").length, nP=MEALS.filter(m=>r[m.k]==="p").length, nN=MEALS.filter(m=>r[m.k]==="n").length;
+  $("cmTot").textContent=`${fmt(pt,0)} g de ${P0.prot} g de proteína`; $("cmProg").style.width=Math.min(100,pt/P0.prot*100)+"%";
+  $("cmAder").textContent=(nS+nP+nN)?`${nS} seguida(s)${nP?`, ${nP} em parte`:""}${nN?`, ${nN} não seguida(s)`:""} de ${MEALS.length} refeições${S.dieta.kcal_total?` · dieta de ${fmt(S.dieta.kcal_total,0)} kcal`:""}`:`Marque cada refeição ao longo do dia${S.dieta.kcal_total?` · dieta de ${fmt(S.dieta.kcal_total,0)} kcal`:""}`;
+  const it=itensHoje(), nowM=curMeal();
+  $("cmMeals").innerHTML=MEALS.map(m=>{ const s=r[m.k], mine=it.map((x,i)=>[x,i]).filter(([x])=>x.m===m.k), g=mine.reduce((a,[x])=>a+(+x.g||0),0);
+    return `<div class="panel mc ${s?"mc-"+s:""} ${nowM&&nowM.k===m.k?"mc-now":""}" id="meal_${m.k}">
+      <div class="mc-h"><span class="t">${esc(m.h||"")}</span><div style="min-width:0"><b>${esc(m.n)}</b><div class="sub">${m.prot!=null?`~${fmt(m.prot,0)} g de proteína${m.est?" (estimado)":""}`:""}${m.kcal?` · ${fmt(m.kcal,0)} kcal`:""}${nowM&&nowM.k===m.k?' <span class="chip acc">próxima</span>':""}</div></div></div>
+      ${m.itens.length?`<ul class="mc-it">${m.itens.map(x=>`<li>${esc(x.a)}${x.q?` <span class="sub">· ${esc(x.q)}</span>`:""}</li>`).join("")}</ul>`:m.d?`<div class="sub">${esc(m.d)}</div>`:""}
+      ${m.subs.length?`<details><summary>Substituições (${m.subs.length})</summary><ul class="mc-it">${m.subs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></details>`:""}
+      ${statusBtns(TK,m)}
+      <details class="det" data-det="${m.k}" ${openDet[m.k]||mine.length?"open":""}><summary>Detalhar o que comi${g?` · ${fmt(g,0)} g de proteína`:""}</summary>
+        <div class="foods" style="margin-top:8px">${FOODS.map((f,i)=>`<button type="button" class="food" data-f="${i}" data-m="${m.k}"><b>${f[0]}</b><span>≈ ${f[1]} g</span></button>`).join("")}</div>
+        <div class="row" style="margin-top:8px"><input inputmode="numeric" placeholder="Outro (g de proteína)" data-cust="${m.k}" style="flex:1;min-width:140px" aria-label="Gramas de proteína"><button class="btn small" type="button" data-add="${m.k}">Adicionar</button></div>
+        <div class="items">${mine.map(([x,i])=>`<div class="item"><span>${esc(x.n)}</span><span class="row" style="gap:8px"><b>${fmt(+x.g,0)} g</b><button type="button" class="x" data-i="${i}" aria-label="Remover ${esc(x.n)}">×</button></span></div>`).join("")}</div>
+      </details></div>`; }).join("");
+  $("cmMeals").querySelectorAll("details.det").forEach(d=>d.addEventListener("toggle",()=>{ openDet[d.dataset.det]=d.open; }));
+  $("cmMeals").querySelectorAll(".food").forEach(b=>b.onclick=()=>addItem(b.dataset.m,FOODS[+b.dataset.f][0],FOODS[+b.dataset.f][1]));
+  $("cmMeals").querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{ const inp=$("cmMeals").querySelector(`[data-cust="${b.dataset.add}"]`), g=num(inp.value); if(g==null||g<=0||g>150){ toast("Informe os gramas de proteína (1 a 150)."); return; } addItem(b.dataset.add,"Outro",Math.round(g)); });
+  $("cmMeals").querySelectorAll(".x").forEach(b=>b.onclick=()=>{ const d=S.diario[TK]; d.itens.splice(+b.dataset.i,1); if(!d.itens.length) delete d.itens; if(!Object.keys(d).length) delete S.diario[TK]; save(); renderComida(); });
+  $("cmWeekP").hidden=!CARD;
+  if(CARD){ const di=(today.getDay()+6)%7; $("cmWeek").innerHTML=CARD.map((rw,i)=>`<div class="dayrow ${i===di?"hoje":""}"><span class="dn">${rw[0]}${i===di?' <span class="chip acc">hoje</span>':''}</span>${["Café","Almoço","Lanche","Jantar"].map((l,j)=>`<span><span class="ml">${l}</span>${esc(rw[j+1])}</span>`).join("")}</div>`).join(""); }
+  if(focusMeal){ const el=$("meal_"+focusMeal); focusMeal=null; if(el) setTimeout(()=>el.scrollIntoView({behavior:"smooth",block:"center"}),60); }
 }
-function addItem(n,g){ S.diario[TK]=S.diario[TK]||{}; const d=S.diario[TK]; d.itens=d.itens||[]; d.itens.push({m:selMeal,n,g}); save(); toast(`+${g} g no ${MEALS.find(m=>m.k===selMeal).n.toLowerCase()}`); renderComida(); renderHoje(derive()); }
-$("cmAdd").onclick=()=>{ const g=num($("cmCustom").value); if(g==null||g<=0||g>150){ toast("Informe os gramas de proteína (1 a 150)."); return; } addItem("Outro",Math.round(g)); $("cmCustom").value=""; };
+function addItem(mk,n,g){ S.diario[TK]=S.diario[TK]||{}; const d=S.diario[TK]; d.itens=d.itens||[]; d.itens.push({m:mk,n,g}); openDet[mk]=true; save(); const m=MEALS.find(x=>x.k===mk); toast(`+${g} g${m?" em "+m.n.toLowerCase():""}`); renderComida(); }
 
 /* ============ MAIS ============ */
 $("tiles").innerHTML=TILES.map(t=>`<button type="button" class="tile" data-go="${t[0]}"><span class="ic"><svg viewBox="0 0 24 24">${ICON[t[0]]}</svg></span><span><b>${t[1]}</b><span>${t[2]}</span></span></button>`).join("");
@@ -1038,13 +1090,14 @@ function renderPA(){
 let cgW=curWeek,cgT="A";
 function renderCargas(){
   weekButtons($("weekpick2"),cgW,w=>{cgW=w;renderCargas();},w=>EXS.some(e=>num((S.cargas[e[1]]||{})[w])!=null));
-  $("cgWk").textContent=cgW; $("cgFase").textContent="Semanas "+(cgW<=2?"1–2":cgW<=4?"3–4":cgW<=8?"5–8":"9–12")+" · "+fase(cgW);
+  $("cgWk").textContent=cgW; $("cgFase").textContent=TCODES.length?"Carga usada em cada semana":"";
+  if(!TCODES.length){ $("segTreino").innerHTML=""; $("exList").innerHTML=`<span class="sub">Importe a ficha do personal em Treino para registrar as cargas aqui.</span>`; return; }
   if(!TCODES.includes(cgT)) cgT=TCODES[0];
   $("segTreino").innerHTML=TCODES.map(t=>`<button type="button" aria-pressed="${t===cgT}" data-t="${t}">${dayLbl(t)} · Treino ${t}</button>`).join("");
   $("segTreino").querySelectorAll("button").forEach(b=>b.onclick=()=>{cgT=b.dataset.t;renderCargas();});
   $("exList").innerHTML=EXS.filter(e=>e[0]===cgT).map(e=>{ const h=S.cargas[e[1]]||{}, v=h[cgW]??""; let prev=null; for(let w=cgW-1;w>=1;w--) if(num(h[w])!=null){prev=[w,num(h[w])];break;}
     const vals=Array.from({length:12},(_,i)=>num(h[i+1]));
-    return `<div class="ex"><div><b>${e[1]}</b>${e[3]?' <span class="chip acc">chave</span>':''}<div class="s">${e[2]}${prev?` · semana ${prev[0]}: ${fmt(prev[1])}`:""}</div></div>
+    return `<div class="ex"><div><b>${esc(e[1])}</b><div class="s">${esc(e[2])}${e[5]?" · indicada "+esc(e[5]):""}${prev?` · semana ${prev[0]}: ${fmt(prev[1])}`:""}</div></div>
       <input inputmode="decimal" data-ex="${esc(e[1])}" value="${v}" placeholder="${e[1].includes('(s)')?'seg':'kg'}" aria-label="Carga ${esc(e[1])} semana ${cgW}"><div class="spark">${spark(vals)}</div></div>`; }).join("");
   $("exList").querySelectorAll("input").forEach(i=>i.addEventListener("change",()=>{ const n=i.dataset.ex; S.cargas[n]=S.cargas[n]||{}; const v=num(i.value); if(v==null) delete S.cargas[n][cgW]; else S.cargas[n][cgW]=v; save(); renderCargas(); }));
 }
@@ -1123,7 +1176,7 @@ async function toJpeg(file){ const bmp=await createImageBitmap(file); const sc=M
 Object.keys(ATT).forEach(sec=>{ const s=document.querySelector(`section[data-v="${sec}"]`); if(!s) return;
   const host=s.querySelector(":scope > .grid2")||s.querySelector(":scope > div:not(.panel)")||s;
   const p=document.createElement("div"); p.className="panel"+(host.classList.contains("grid2")?" span":""); p.dataset.att=sec; if(host===s) p.style.marginTop="16px"; host.appendChild(p);
-  if(sec==="treino"||sec==="comida"){ const b=document.createElement("div"); b.id="src_"+sec; const first=sec==="treino"?s.querySelector(".panel"):s.querySelector(".grid2"); first.parentNode.insertBefore(b,first); } });
+ });
 let attDel=null, srcPend=null;
 async function uploadAtt(sec,f,msg){
   let t=OKT.test(f.type)?f.type:(extType(f.name)||f.type), blob=f, name=f.name||"arquivo";
@@ -1132,9 +1185,9 @@ async function uploadAtt(sec,f,msg){
   try{ const r=await assets.upload(blob,{type:t}); S.anexos=S.anexos||{}; (S.anexos[sec]=S.anexos[sec]||[]).push({id:r.id,n:name,t,d:TK,sz:r.sizeBytes}); save(); return {blob,t,name}; }
   catch(err){ const c=err&&err.code; msg.textContent=`${name}: `+(c==="too_large"?"arquivo acima de 20 MB.":c==="unsupported_type"?"formato não aceito.":c==="quota_or_state"?"espaço de arquivos cheio.":"não foi possível enviar agora."); return null; }
 }
-function renderAtt(sec){ const box=document.querySelector(`[data-att="${sec}"]`); if(!box) return; const L=(S.anexos&&S.anexos[sec])||[]; const ai=AI[sec]&&SAMPLE;
+function renderAtt(sec){ const box=document.querySelector(`[data-att="${sec}"]`); if(!box) return; const L=(S.anexos&&S.anexos[sec])||[]; const ai=AI[sec]&&SAMPLE, aibar=ai&&sec==="exames";
   box.innerHTML=`<div class="sec-h"><h2>Anexos</h2><span class="sub">${ATT[sec]}</span></div>
-   ${ai?`<div class="aibar"><div style="flex:1 1 240px;min-width:0"><b>Leitura automática</b><div class="sub">Anexe ${AI[sec].what} (PDF ou foto). O app lê e preenche sozinho; logo depois você pode ver os detalhes ou desfazer.</div></div><label class="btn small" for="ai_${sec}" style="display:inline-block">${AI[sec].btn}</label><input type="file" id="ai_${sec}" accept="image/*,application/pdf,.pdf,.csv,.txt" hidden></div>`:""}
+   ${aibar?`<div class="aibar"><div style="flex:1 1 240px;min-width:0"><b>Leitura automática</b><div class="sub">Anexe ${AI[sec].what} (PDF ou foto). O app lê e preenche sozinho; logo depois você pode ver os detalhes ou desfazer.</div></div><label class="btn small" for="ai_${sec}" style="display:inline-block">${AI[sec].btn}</label><input type="file" id="ai_${sec}" accept="image/*,application/pdf,.pdf,.csv,.txt" hidden></div>`:""}
    ${assets?`<div class="row"><label class="btn ghost small" for="af_${sec}" style="display:inline-block">+ Anexar arquivo</label><input type="file" id="af_${sec}" accept="image/*,application/pdf,.pdf,.csv,.txt,video/mp4,video/webm" multiple hidden></div>`:`<span class="sub">Só o dono do app pode anexar arquivos.</span>`}
    <div class="row" style="margin-top:6px"><span class="sub" id="am_${sec}" style="flex:1"></span><button type="button" class="btn ghost small" id="aistop_${sec}" hidden>Cancelar leitura</button></div>
    <div class="atts">${L.length?L.map((a,i)=>{ const img=/^image\//.test(a.t), ext=(a.n.split(".").pop()||"arq").slice(0,4), canRead=ai&&/^(image\/|application\/pdf|text\/)/.test(a.t);
@@ -1155,10 +1208,17 @@ function renderAtt(sec){ const box=document.querySelector(`[data-att="${sec}"]`)
 }
 function srcBanner(sec){ const el=$("src_"+sec); if(!el) return; const p=sec==="treino"?S.treinoPlan:S.dieta;
   if(!p){ el.innerHTML=""; el.className=""; return; }
-  el.className="srcb"; el.innerHTML=`<span>${sec==="treino"?"Treino do personal":"Dieta da nutricionista"}${p.fonte?` · ${esc(p.fonte)}`:""}${p.d?` · desde ${dm(parseKey(p.d))}`:""}</span><button type="button" class="linkbtn" id="rst_${sec}">${srcPend===sec?"Confirmar: voltar ao e-book":"Voltar ao plano do e-book"}</button>`;
-  $("rst_"+sec).onclick=()=>{ if(srcPend!==sec){ srcPend=sec; srcBanner(sec); setTimeout(()=>{ if(srcPend===sec){ srcPend=null; srcBanner(sec); } },4000); return; }
-    srcPend=null; if(sec==="treino") delete S.treinoPlan; else delete S.dieta; applyPlans(); save(); toast("Plano do e-book restaurado"); renderView(); };
+  const hist=(sec==="treino"?S.treinoHist:S.dietaHist)||[];
+  el.className="srcb"; el.innerHTML=`<div style="flex:1 1 220px;min-width:0"><b>${sec==="treino"?"Ficha do personal":"Dieta da nutricionista"}</b><div class="sub">${esc(p.fonte||"arquivo")}${p.d?` · desde ${dm(parseKey(p.d))}`:""}</div><div class="sub" id="impm_${sec}"></div></div>
+   <div class="row" style="gap:8px">${hist.length?`<button type="button" class="linkbtn" id="prev_${sec}">${srcPend===sec?"Confirmar: voltar à anterior":"Voltar à anterior"}</button>`:""}<button type="button" class="btn ghost small" id="imps_${sec}" hidden>Cancelar</button><label class="btn small" for="imp_${sec}">${sec==="treino"?"Nova ficha":"Nova dieta"}</label><input type="file" id="imp_${sec}" accept="image/*,application/pdf,.pdf,.txt" hidden></div>`;
+  bindImp(sec);
+  const pv=$("prev_"+sec); if(pv) pv.onclick=()=>{ if(srcPend!==sec){ srcPend=sec; srcBanner(sec); setTimeout(()=>{ if(srcPend===sec){ srcPend=null; srcBanner(sec); } },4000); return; }
+    srcPend=null; const H=sec==="treino"?"treinoHist":"dietaHist", K=sec==="treino"?"treinoPlan":"dieta"; const prev=S[H].pop(); S[H].unshift(S[K]); S[H]=S[H].slice(-5); S[K]=prev;
+    applyPlans(); save(); toast(sec==="treino"?"Ficha anterior restaurada":"Dieta anterior restaurada"); renderView(); };
 }
+async function importFlow(sec,f,ui){ if(assets){ ui.msg.textContent=`Guardando ${f.name}…`; await uploadAtt(sec,f,ui.msg); } runAI(sec,f,f.name,ui); }
+window.__rumoImport=(sec,f)=>{ go(sec); setTimeout(()=>{ const m=$("impm_"+sec); importFlow(sec,f,m?{msg:m,stop:$("imps_"+sec)}:{msg:$("am_"+sec),stop:$("aistop_"+sec)}); },80); };
+window.__rumoAttach=async(sec,f)=>{ go(sec); if(!assets) return; await uploadAtt(sec,f,$("am_"+sec)||{set textContent(v){}}); toast("Arquivo anexado"); renderView(); };
 
 /* ---- leitura ---- */
 function loadScript(src){ return new Promise((r,j)=>{ const s=document.createElement("script"); s.src=src; s.onload=r; s.onerror=j; document.head.appendChild(s); }); }
@@ -1197,20 +1257,20 @@ Regras: use ponto decimal; "valor" é sempre número (o resultado do paciente, n
   if(sec==="comida") return `Você vai ler uma dieta prescrita por nutricionista e organizá-la para um aplicativo de acompanhamento. ${src}
 
 Responda somente com JSON neste formato:
-{"kcal_total":2300,"proteina_total_g":160,"refeicoes":[{"nome":"Café da manhã","horario":"07:30","descricao":"alimentos e quantidades, resumidos em uma linha","proteina_g":35,"proteina_estimada":false}],"cardapio_semanal":[{"dia":"Seg","cafe":"...","almoco":"...","lanche":"...","jantar":"..."}],"observacoes":"orientações gerais em até 2 frases"}
+{"kcal_total":2300,"proteina_total_g":160,"agua":"3 L por dia","refeicoes":[{"nome":"Café da manhã","horario":"07:30","itens":[{"alimento":"Ovo mexido","quantidade":"2 unidades"}],"substituicoes":["Ovos podem ser trocados por 30 g de whey"],"proteina_g":35,"kcal":450,"proteina_estimada":false}],"cardapio_semanal":[{"dia":"Seg","cafe":"...","almoco":"...","lanche":"...","jantar":"..."}],"dicas":["orientação curta"],"observacoes":"resumo geral em 1 frase ou null"}
 
-Regras: inclua todas as refeições na ordem do dia. Se a dieta não informar a proteína de uma refeição, estime pelos alimentos e quantidades e marque "proteina_estimada": true. Se não houver total de calorias ou proteína, use null. "cardapio_semanal" só se a dieta trouxer opções diferentes por dia da semana; senão, lista vazia. Não invente alimentos que não estão na dieta.`;
+Regras: inclua todas as refeições na ordem do dia, com cada alimento e a quantidade exatamente como na dieta. "substituicoes": as trocas ou opções que a dieta permite para aquela refeição. Se a dieta não informar a proteína ou as calorias de uma refeição, estime pelos alimentos e quantidades e marque "proteina_estimada": true. Totais ausentes: null. "cardapio_semanal" só se a dieta trouxer opções diferentes por dia da semana; senão, lista vazia. "dicas": até 10 orientações curtas da nutricionista (hidratação, suplementos, horários, o que evitar). "agua": a meta de água, se houver, senão null. Não invente alimentos, quantidades nem dicas que não estão na dieta.`;
   return `Você vai ler uma ficha de treino de musculação passada por um personal trainer e organizá-la para um aplicativo. ${src}
 
 Responda somente com JSON neste formato:
-{"treinos":[{"codigo":"A","nome":"Peito e tríceps","dias":["seg","qui"],"exercicios":[{"nome":"Supino reto com barra","series":4,"reps":"8–10","descanso_s":90,"obs":"cadência ou técnica, se houver"}]}],"observacoes":"orientações gerais em até 2 frases"}
+{"treinos":[{"codigo":"A","nome":"Peito e tríceps","dias":["seg","qui"],"exercicios":[{"nome":"Supino reto com barra","series":4,"reps":"8–10","carga":"20 kg de cada lado","carga_kg":60,"descanso_s":90,"obs":"cadência, método ou técnica, se houver"}]}],"dicas":["orientação curta"],"observacoes":"resumo geral em 1 frase ou null"}
 
-Regras: um item em "treinos" por divisão (A, B, C...), na ordem da ficha. "dias" só se a ficha indicar os dias da semana (use seg, ter, qua, qui, sex, sab, dom); senão, lista vazia. "series" é inteiro; "reps" é texto como na ficha (ex.: "12", "10–12", "até a falha", "30 s"). Inclua aquecimento ou cardio só se estiverem na ficha, como exercício. Não invente exercícios.`;
+Regras: um item em "treinos" por divisão (A, B, C...), na ordem da ficha. "dias" só se a ficha indicar os dias da semana (use seg, ter, qua, qui, sex, sab, dom); senão, lista vazia. "series" é inteiro; "reps" é texto como na ficha (ex.: "12", "10–12", "12/10/8", "até a falha", "30 s"). "carga" é a carga indicada como está escrita na ficha; "carga_kg" é o número em kg só quando der para saber (a carga total do exercício), senão null. "descanso_s" em segundos, ou null. Métodos (drop-set, bi-set, rest-pause) vão em "obs". Aquecimento e cardio só se estiverem na ficha, como exercício. "dicas": até 10 orientações gerais do personal (aquecimento, progressão de carga, cardio, frequência). Não invente exercícios, cargas nem dicas.`;
 }
-function aiErr(e){ const c=e&&e.code; return ({not_granted:"A leitura com IA não foi autorizada neste app.",sampling_disabled:"A leitura com IA não está disponível para esta conta.",images_unavailable:"Leitura de fotos indisponível aqui. Tente um PDF com texto.",scan_no_images:"Este PDF é uma imagem escaneada e a leitura de imagens não está disponível aqui.",image_rejected:"A imagem não pôde ser lida. Tente outra foto, mais nítida.",invalid_json:"Não consegui organizar a leitura. Tente de novo.",rate_limited:"Muitas leituras seguidas. Tente de novo em alguns minutos.",cancelled:"Leitura cancelada.",refused:"Não foi possível ler este arquivo.",pdf_load:"Não consegui abrir o leitor de PDF. Verifique a conexão e tente de novo.",empty:"O arquivo parece vazio.",no_key:"Configure a chave da API em Mais › Consulta › Leitura automática.",bad_key:"Chave da API inválida ou sem crédito. Confira em Mais › Consulta.",offline:"Sem internet. A leitura automática precisa de conexão.",prompt_too_large:"Arquivo grande demais para ler de uma vez. Envie só as páginas principais."})[c]||"Não foi possível ler agora. Tente de novo."; }
-async function runAI(sec,file,fname){
-  const msg=$("am_"+sec), stop=$("aistop_"+sec); if(!SAMPLE){ msg.textContent="A leitura com IA não está disponível nesta visualização."; return; }
-  const ctl=new AbortController(); stop.hidden=false; stop.onclick=()=>ctl.abort();
+function aiErr(e){ const c=e&&e.code; return ({not_granted:"A leitura com IA não foi autorizada neste app.",sampling_disabled:"A leitura com IA não está disponível para esta conta.",images_unavailable:"Leitura de fotos indisponível aqui. Tente um PDF com texto.",scan_no_images:"Este PDF é uma imagem escaneada e a leitura de imagens não está disponível aqui.",image_rejected:"A imagem não pôde ser lida. Tente outra foto, mais nítida.",invalid_json:"Não consegui organizar a leitura. Tente de novo.",rate_limited:"Muitas leituras seguidas. Tente de novo em alguns minutos.",cancelled:"Leitura cancelada.",refused:"Não foi possível ler este arquivo.",pdf_load:"Não consegui abrir o leitor de PDF. Verifique a conexão e tente de novo.",empty:"O arquivo parece vazio.",no_key:"Configure a chave da leitura automática em Mais › Consulta.",bad_key:"Chave da API inválida ou sem crédito. Confira em Mais › Consulta.",offline:"Sem internet. A leitura automática precisa de conexão.",prompt_too_large:"Arquivo grande demais para ler de uma vez. Envie só as páginas principais."})[c]||"Não foi possível ler agora. Tente de novo."; }
+async function runAI(sec,file,fname,ui){
+  const msg=(ui&&ui.msg)||$("am_"+sec), stop=(ui&&ui.stop)||$("aistop_"+sec); if(!SAMPLE){ msg.textContent="A leitura com IA não está disponível nesta visualização."; return; }
+  const ctl=new AbortController(); if(stop){ stop.hidden=false; stop.onclick=()=>ctl.abort(); }
   try{
     msg.textContent="Abrindo o arquivo…";
     const src=await readSource(file); if(ctl.signal.aborted) throw {code:"cancelled"};
@@ -1218,9 +1278,9 @@ async function runAI(sec,file,fname){
     msg.textContent=`Lendo ${AI[sec].what} com IA… pode levar até um minuto.`;
     const opts={signal:ctl.signal,modelTier:"default",cache:false}; if(src.images.length) opts.images=src.images;
     const data=await SAMPLE.json(buildPrompt(sec,src.text,!!src.images.length),opts);
-    msg.textContent=""; showReview(sec,data,fname);
+    msg.textContent=""; showReview(sec,data,fname,msg);
   }catch(e){ msg.textContent=aiErr(e); }
-  finally{ stop.hidden=true; }
+  finally{ if(stop) stop.hidden=true; }
 }
 
 /* ---- conferência ---- */
@@ -1236,11 +1296,12 @@ $("rvNo").onclick=closeReview;
 $("rvOk").onclick=()=>{ const f=rvApply; closeReview(); if(f) f(); };
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&!$("rv").hidden) closeReview(); });
 const nu=s=>na(s).replace(/[^a-z0-9%/]/g,"");
-function showReview(sec,data,fname){
-  if(!data||typeof data!=="object"){ $("am_"+sec).textContent=aiErr({code:"invalid_json"}); return; }
+function showReview(sec,data,fname,msgEl){
+  const say=t=>{ (msgEl||$("am_"+sec)).textContent=t; };
+  if(!data||typeof data!=="object"){ say(aiErr({code:"invalid_json"})); return; }
   if(sec==="exames"){
     const R=(Array.isArray(data.resultados)?data.resultados:[]).map(r=>({k:EXNAMES.includes(r.chave)?r.chave:null,n:String(r.nome_no_laudo||r.chave||"Exame").slice(0,60),v:num(r.valor),u:String(r.unidade||"").slice(0,20)})).filter(r=>r.v!=null);
-    if(!R.length){ $("am_"+sec).textContent="Não encontrei resultados com valores neste arquivo."; return; }
+    if(!R.length){ say("Não encontrei resultados com valores neste arquivo."); return; }
     const dc=/^\d{4}-\d{2}-\d{2}$/.test(data.data_coleta||"")?data.data_coleta:null;
     const html=`<p class="sub" style="margin:0 0 10px">${esc(fname)}${data.laboratorio?" · "+esc(data.laboratorio):""}${dc?" · coleta em "+dm(parseKey(dc)):""}. Confira as unidades; se algo estiver errado, desfaça ou corrija na tabela.</p>
       <div class="tw"><table><thead><tr><th></th><th>Exame</th><th class="num">Lido</th><th>Unidade</th><th class="num">Junho</th></tr></thead><tbody>${R.map((r,i)=>{ const ref=r.k?EXAMES.find(e=>e[0]===r.k):null, cur=r.k?num(S.exames[r.k]):null;
@@ -1251,26 +1312,31 @@ function showReview(sec,data,fname){
         if(r.k) S.exames[r.k]=String(r.v); else { const j=S.exames._extras.findIndex(x=>na(x.n)===na(r.n)); const o={n:r.n,v:String(r.v),u:r.u}; if(j>=0) S.exames._extras[j]=o; else S.exames._extras.push(o); } });
       if(dc) S.exames._data=dc; save(); toast(`${n} resultado(s) preenchido(s)`); renderView(); },"Preencher exames");
     return; }
+  const arr=v=>Array.isArray(v)?v:[];
   if(sec==="comida"){
-    const M=Array.isArray(data.refeicoes)?data.refeicoes.filter(r=>r&&(r.nome||r.descricao)):[];
-    if(!M.length){ $("am_"+sec).textContent="Não encontrei refeições neste arquivo."; return; }
+    const M=arr(data.refeicoes).filter(r=>r&&(r.nome||r.descricao||arr(r.itens).length));
+    if(!M.length){ say("Não encontrei refeições neste arquivo."); return; }
     const pt=num(data.proteina_total_g)||M.reduce((a,r)=>a+(num(r.proteina_g)||0),0);
     const html=`<p class="sub" style="margin:0 0 10px">${esc(fname)} · ${M.length} refeições${num(data.kcal_total)?` · ${fmt(num(data.kcal_total),0)} kcal`:""}${pt?` · ${fmt(pt,0)} g de proteína por dia`:""}</p>
-      <div class="rvlist">${M.map(r=>`<div class="rvt"><div class="row" style="justify-content:space-between"><b>${esc(r.horario||"")} ${esc(r.nome||"")}</b><span>${num(r.proteina_g)!=null?fmt(num(r.proteina_g),0)+" g prot.":"—"}${r.proteina_estimada?' <span class="chip warn">estimado</span>':""}</span></div><div class="sub">${esc(r.descricao||"")}</div></div>`).join("")}</div>
-      ${Array.isArray(data.cardapio_semanal)&&data.cardapio_semanal.length?`<p class="sub">Inclui cardápio para ${data.cardapio_semanal.length} dia(s) da semana.</p>`:""}
-      ${data.observacoes?`<p class="sub">${esc(data.observacoes)}</p>`:""}
-      <p class="foot">As refeições, os horários e a meta de proteína passaram a seguir esta dieta. Você pode voltar ao plano do e-book quando quiser.</p>`;
-    openReview("Dieta lida do arquivo",html,()=>{ S.dieta={kcal_total:num(data.kcal_total),proteina_total_g:num(data.proteina_total_g),refeicoes:M.slice(0,8).map(r=>({nome:r.nome,horario:r.horario,descricao:r.descricao,proteina_g:num(r.proteina_g)})),cardapio_semanal:Array.isArray(data.cardapio_semanal)?data.cardapio_semanal.slice(0,7):[],observacoes:String(data.observacoes||"").slice(0,300),fonte:fname,d:TK};
-      applyPlans(); save(); toast("Dieta aplicada"); go("comida"); },"Usar esta dieta");
+      <div class="rvlist">${M.map(r=>`<div class="rvt"><div class="row" style="justify-content:space-between"><b>${esc(r.horario||"")} ${esc(r.nome||"")}</b><span>${num(r.proteina_g)!=null?fmt(num(r.proteina_g),0)+" g prot.":"—"}${r.proteina_estimada?' <span class="chip warn">estimado</span>':""}</span></div>${arr(r.itens).length?`<ul class="mc-it">${arr(r.itens).map(x=>`<li>${esc(x.alimento||"")}${x.quantidade?" · "+esc(x.quantidade):""}</li>`).join("")}</ul>`:`<div class="sub">${esc(r.descricao||"")}</div>`}${arr(r.substituicoes).length?`<div class="sub">${arr(r.substituicoes).length} substituição(ões)</div>`:""}</div>`).join("")}</div>
+      ${arr(data.dicas).length?`<p class="sub">${arr(data.dicas).length} dica(s) da nutricionista.</p>`:""}
+      <p class="foot">As refeições, os horários e a meta de proteína passaram a seguir esta dieta. A anterior fica guardada.</p>`;
+    openReview("Dieta lida do arquivo",html,()=>{ if(S.dieta) S.dietaHist=(S.dietaHist||[]).concat([S.dieta]).slice(-5);
+      S.dieta={kcal_total:num(data.kcal_total),proteina_total_g:num(data.proteina_total_g),agua:data.agua?String(data.agua).slice(0,60):null,
+        refeicoes:M.slice(0,8).map(r=>({nome:String(r.nome||"").slice(0,40),horario:String(r.horario||"").slice(0,10),descricao:String(r.descricao||"").slice(0,300),itens:arr(r.itens).slice(0,15).map(x=>({alimento:String(x.alimento||"").slice(0,60),quantidade:String(x.quantidade||"").slice(0,40)})),substituicoes:arr(r.substituicoes).slice(0,8).map(s=>String(s).slice(0,160)),proteina_g:num(r.proteina_g),kcal:num(r.kcal),proteina_estimada:!!r.proteina_estimada})),
+        cardapio_semanal:arr(data.cardapio_semanal).slice(0,7),dicas:arr(data.dicas).slice(0,10).map(s=>String(s).slice(0,200)),observacoes:data.observacoes?String(data.observacoes).slice(0,300):"",fonte:fname,d:TK};
+      applyPlans(); save(); toast("Dieta importada"); go("comida"); });
     return; }
-  const T=Array.isArray(data.treinos)?data.treinos.filter(t=>t&&Array.isArray(t.exercicios)&&t.exercicios.length):[];
-  if(!T.length){ $("am_"+sec).textContent="Não encontrei exercícios neste arquivo."; return; }
+  const T=arr(data.treinos).filter(t=>t&&arr(t.exercicios).length);
+  if(!T.length){ say("Não encontrei exercícios neste arquivo."); return; }
   const html=`<p class="sub" style="margin:0 0 10px">${esc(fname)} · ${T.length} treino(s), ${T.reduce((a,t)=>a+t.exercicios.length,0)} exercícios</p>
-    <div class="rvlist">${T.map((t,i)=>`<div class="rvt"><h3>Treino ${esc(t.codigo||String.fromCharCode(65+i))} · ${esc(t.nome||"")}</h3>${Array.isArray(t.dias)&&t.dias.length?`<div class="sub" style="margin-bottom:6px">Dias: ${esc(t.dias.join(", "))}</div>`:""}<ol>${t.exercicios.map(e=>`<li><b>${esc(e.nome||"")}</b> · ${esc(String(e.series||"?"))} × ${esc(String(e.reps||"?"))}${e.descanso_s?` · ${esc(String(e.descanso_s))} s`:""}${e.obs?` <span class="sub">(${esc(e.obs)})</span>`:""}</li>`).join("")}</ol></div>`).join("")}</div>
-    ${data.observacoes?`<p class="sub">${esc(data.observacoes)}</p>`:""}
-    <p class="foot">Estas fichas substituíram as do e-book. O histórico de cargas continua guardado pelo nome de cada exercício.</p>`;
-  openReview("Treino lido do arquivo",html,()=>{ S.treinoPlan={treinos:T.slice(0,7).map(t=>({codigo:t.codigo,nome:t.nome,dias:Array.isArray(t.dias)?t.dias:[],exercicios:t.exercicios.slice(0,20).map(e=>({nome:e.nome,series:e.series,reps:e.reps,obs:[e.descanso_s?`descanso ${e.descanso_s} s`:"",e.obs||""].filter(Boolean).join(" · ")}))})),observacoes:String(data.observacoes||"").slice(0,300),fonte:fname,d:TK};
-    applyPlans(); save(); toast("Novo treino aplicado"); go("treino"); },"Usar este treino");
+    <div class="rvlist">${T.map((t,i)=>`<div class="rvt"><h3>Treino ${esc(t.codigo||String.fromCharCode(65+i))} · ${esc(t.nome||"")}</h3>${arr(t.dias).length?`<div class="sub" style="margin-bottom:6px">Dias: ${esc(t.dias.join(", "))}</div>`:""}<ol>${t.exercicios.map(e=>`<li><b>${esc(e.nome||"")}</b> · ${esc(String(e.series||"?"))} × ${esc(String(e.reps||"?"))}${e.carga?` · ${esc(e.carga)}`:""}${e.descanso_s?` · ${esc(String(e.descanso_s))} s`:""}${e.obs?` <span class="sub">(${esc(e.obs)})</span>`:""}</li>`).join("")}</ol></div>`).join("")}</div>
+    ${arr(data.dicas).length?`<p class="sub">${arr(data.dicas).length} dica(s) do personal.</p>`:""}
+    <p class="foot">Estas fichas passaram a valer. A anterior fica guardada, e o histórico de cargas continua pelo nome de cada exercício.</p>`;
+  openReview("Treino lido do arquivo",html,()=>{ if(S.treinoPlan) S.treinoHist=(S.treinoHist||[]).concat([S.treinoPlan]).slice(-5);
+    S.treinoPlan={treinos:T.slice(0,7).map(t=>({codigo:t.codigo,nome:String(t.nome||"").slice(0,50),dias:arr(t.dias),exercicios:t.exercicios.slice(0,25).map(e=>({nome:String(e.nome||"").slice(0,60),series:parseInt(e.series)||null,reps:String(e.reps||"").slice(0,24),carga:e.carga?String(e.carga).slice(0,40):"",carga_kg:num(e.carga_kg),descanso_s:num(e.descanso_s),obs:e.obs?String(e.obs).slice(0,160):""}))})),
+      dicas:arr(data.dicas).slice(0,10).map(s=>String(s).slice(0,200)),observacoes:data.observacoes?String(data.observacoes).slice(0,300):"",fonte:fname,d:TK};
+    trT=null; applyPlans(); save(); toast("Ficha importada"); go("treino"); });
 }
 
 /* ============ navegação ============ */
@@ -1288,7 +1354,7 @@ function renderView(){ const D=derive();
   if(ATT[view]) renderAtt(view);
   renderCover(D); }
 function renderAll(){ renderView(); }
-document.addEventListener("click",e=>{ const t=e.target.closest("[data-go]"); if(!t) return; if(t.dataset.meal){ selMeal=t.dataset.meal; } go(t.dataset.go); });
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-go]"); if(!t) return; if(t.dataset.meal){ focusMeal=t.dataset.meal; } go(t.dataset.go); });
 window.addEventListener("hashchange",()=>{ const h=location.hash.slice(1); if(h&&h!==view) go(h); });
 let rz; window.addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout(()=>renderView(),160); });
 
@@ -1367,6 +1433,19 @@ document.addEventListener("click",async e=>{ const a=e.target.closest('a[href*="
   if(/^image\//.test(v.type)){ const o=document.createElement("div"); o.className="viewer"; o.innerHTML=`<img alt="Anexo"><button type="button">Fechar</button>`; o.querySelector("img").src=u; o.onclick=()=>{ o.remove(); URL.revokeObjectURL(u); }; document.body.appendChild(o); return; }
   const n=document.createElement("a"); n.href=u; n.download=(a.closest(".att")?.querySelector(".nm")?.textContent)||"anexo"; n.target="_blank"; document.body.appendChild(n); n.click(); n.remove(); setTimeout(()=>URL.revokeObjectURL(u),60000); });
 if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+})();
+/* Arquivo recebido pelo Compartilhar do Android */
+(async function(){
+  const R=window.__rumo; let sh=null; try{ sh=await R.kv.get("shared"); }catch(e){} if(!sh||!sh.blob) return;
+  await R.kv.set("shared",null);
+  const f=new File([sh.blob],sh.name||"arquivo",{type:sh.type||sh.blob.type});
+  const m=document.createElement("div"); m.className="modal"; m.setAttribute("role","dialog"); m.setAttribute("aria-modal","true");
+  m.innerHTML=`<div class="modal-in"><div class="sec-h"><h2>Arquivo recebido</h2></div><p class="sub" style="margin:0 0 14px"></p>
+    <div style="display:grid;gap:10px"><button class="btn" data-k="treino">É a ficha de treino</button><button class="btn" data-k="comida">É a dieta</button><button class="btn" data-k="exames">É um laudo de exames</button><button class="btn ghost" data-k="guardar">Só guardar nos anexos</button><button class="btn ghost" data-k="x">Cancelar</button></div></div>`;
+  m.querySelector("p").textContent=f.name+" · o que é este arquivo?";
+  document.body.appendChild(m);
+  m.querySelectorAll("button").forEach(b=>b.onclick=()=>{ const k=b.dataset.k; m.remove(); if(k==="x") return;
+    if(k==="guardar") window.__rumoAttach&&window.__rumoAttach("consulta",f); else window.__rumoImport&&window.__rumoImport(k,f); });
 })();
 
 </script>
